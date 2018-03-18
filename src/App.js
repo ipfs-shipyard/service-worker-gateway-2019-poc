@@ -1,21 +1,21 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { Router as ReactRouter, Route, Switch } from 'react-router-dom';
+import createHistory from 'history/createBrowserHistory';
 
-class App extends Component {
+import Gateway from './Gateway';
+import Home from './Home';
+
+const browserHistory = createHistory();
+
+export default class App extends Component {
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
-        </header>
-        <p className="App-intro">
-          To get started, edit <code>src/App.js</code> and save to reload.
-        </p>
-      </div>
+      <ReactRouter history={browserHistory}>
+        <Switch>
+          <Route exact path="/ipfs/:hash" component={Gateway} />
+          <Route path="/" component={Home} />
+        </Switch>
+      </ReactRouter>
     );
   }
 }
-
-export default App;
