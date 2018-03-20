@@ -12,6 +12,10 @@ const IFrame = styled.iframe`
 class Gateway extends Component {
   node: IPFS;
 
+  state = {
+    files: [],
+  };
+
   constructor(props) {
     super(props);
     this.state = { text: props.initialText, files: [] };
@@ -42,11 +46,10 @@ class Gateway extends Component {
   }
 
   getFile(hash: string) {
-    this.node.files.get(hash, function(err, files) {
-      files.forEach(file => {
-        console.log(file.path);
-        console.log(file.content.toString('utf8'));
-      });
+    this.node.files.get(hash, (err, files) => {
+      if (files) {
+        this.setState({ files });
+      }
     });
   }
 
@@ -54,7 +57,14 @@ class Gateway extends Component {
     return (
       <Container>
         {this.props.match.params.hash}
-        <IFrame src="http://www.baidu.com" />
+        {/* <IFrame srcdoc="<html><body>Hello, <b>world</b>.</body></html>" /> */}
+        {this.state.files.map(({ hash, type, content }) => {
+          if (type === 'file') {
+            return <div>{content.toString('utf8')}</div>;
+          } else {
+            return <div>Folder {hash}</div>;
+          }
+        })}
       </Container>
     );
   }
