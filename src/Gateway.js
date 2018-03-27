@@ -1,12 +1,12 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
+import { Card } from 'rebass';
 import { withRouter } from 'react-router-dom';
 import IPFS from 'ipfs';
+import Flex from 'styled-flex-component';
 
-const Container = styled.article``;
-const IFrame = styled.iframe`
-  width: 100vw;
-  height: 100vh;
+const Container = styled(Flex)`
+  overflow: scroll;
 `;
 
 class Gateway extends Component {
@@ -48,6 +48,7 @@ class Gateway extends Component {
   getFile(hash: string) {
     this.node.files.get(hash, (err, files) => {
       if (files) {
+        console.log(files)
         this.setState({ files });
       }
     });
@@ -55,14 +56,14 @@ class Gateway extends Component {
 
   render() {
     return (
-      <Container>
+      <Container center column>
         {this.props.match.params.hash}
-        {/* <IFrame srcdoc="<html><body>Hello, <b>world</b>.</body></html>" /> */}
+        {this.state.files.length === 0 && <h3>Loading...</h3>}
         {this.state.files.map(({ hash, type, content }) => {
           if (type === 'file') {
-            return <div>{content.toString('utf8')}</div>;
+            return <Card>{content.toString('utf8')}</Card>;
           } else {
-            return <div>Folder {hash}</div>;
+            return <Card>Folder {hash}</Card>;
           }
         })}
       </Container>
