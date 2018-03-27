@@ -54,17 +54,15 @@ async function getFile(hash) {
   });
 }
 
-/** Using files.cat, see https://github.com/ipfs/ipfs-service-worker
- * This can not deal with the folder: "Error: this dag node is a directory"
- * And it will block the page.
- */
-async function catAndRespond(hash) {
-  const node = await getReadyNode();
-  const data = await node.files.cat(hash);
-  console.log('catAndRespond');
-  console.log(data);
-  const headers = { status: 200, statusText: 'OK', headers: {} };
-  return new Response(data, headers);
+const headers = { status: 200, statusText: 'OK', headers: {} };
+async function RespondFromIpfs(multihash) {
+  try {
+    const files = await getFile(multihash);
+    console.log(files);
+    return new Response(files[1].content.toString(), headers);
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 self.addEventListener('install', event => {
@@ -73,17 +71,11 @@ self.addEventListener('install', event => {
   event.waitUntil(self.skipWaiting());
 });
 
-self.addEventListener('fetch', async event => {
+self.addEventListener('fetch', event => {
   console.log(`Service worker getting ${event.request.url}`);
   if (event.request.url.startsWith(`${self.location.origin}/ipfs`)) {
     const multihash = event.request.url.split('/ipfs/')[1];
-    console.log(`The hash is ${multihash}`);
-
-    try {
-      const files = await getFile(multihash);
-      console.log(files);
-    } catch (error) {
-      console.error(error);
-    }
+    console.log(`The hash is ${multihash}, trying to response it with content got from IPFS.`);
+    event.respondWith(RespondFromIpfs(multihash));
   }
 });
