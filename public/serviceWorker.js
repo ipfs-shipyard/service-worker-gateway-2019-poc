@@ -1,5 +1,5 @@
 /* global self, Response */
-const IPFS = require('ipfs');
+const IPFS = importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
 
 let ipfsNode = null;
 
@@ -71,9 +71,10 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
+  console.log(`Service worker getting ${event.request.url}`);
   if (event.request.url.startsWith(`${self.location.origin}/hash`)) {
     const multihash = event.request.url.split('/hash/')[1];
-    console.log(`Service worker getting ${multihash} from:\n  ${event.request.url}`);
+    console.log(`The hash is ${multihash}`);
 
     event.respondWith(catAndRespond(multihash));
   }
