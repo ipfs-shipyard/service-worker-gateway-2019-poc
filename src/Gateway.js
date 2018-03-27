@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import styled from 'styled-components';
-import { Card } from 'rebass';
 import { withRouter } from 'react-router-dom';
-import IPFS from 'ipfs';
 import Flex from 'styled-flex-component';
 
 const Container = styled(Flex)`
