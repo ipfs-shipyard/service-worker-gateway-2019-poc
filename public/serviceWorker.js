@@ -81,6 +81,7 @@ self.addEventListener('fetch', async event => {
 
     try {
       const files = await getFile(multihash);
+      console.log(files);
     } catch (error) {
       console.error(error);
     }
