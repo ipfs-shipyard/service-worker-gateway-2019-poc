@@ -10,6 +10,12 @@ This is a "create-react-app" app, so just:
 
 ## Drawback
 
-1. 第一次访问速度比较慢，远低于 HTTP 服务器。当然，访问 ```http://ipfs.io/ipfs``` 也是这个速度
-1. 没有长期缓存，所以隔一段时间后访问都会是第一次访问的那个速度，不像 ipfs.io/ipfs 后续访问会比较快。
-1. 像 [QmRoYXgYMfcP7YQR4sCuSeJy9afgA5XDJ78JzWntpRhmcu](http://ipfs.io/ipfs/QmRoYXgYMfcP7YQR4sCuSeJy9afgA5XDJ78JzWntpRhmcu) 这样的大文件会崩（可能因为我现在用的是 files.get），目前比较适合访问 IPFS 上的 HTML 文件。
+1. First visit is way slower than traditional HTTP page. Though ```http://ipfs.io/ipfs``` is slow too.
+1. Can't promise long term cache, compare to gateway running in a server, who can pin a file for a longer time.
+1. Large folders like [QmRoYXgYMfcP7YQR4sCuSeJy9afgA5XDJ78JzWntpRhmcu](http://ipfs.io/ipfs/QmRoYXgYMfcP7YQR4sCuSeJy9afgA5XDJ78JzWntpRhmcu) may destroy service worker (maybe due to my using ```files.get```), so it's more suitable to just load HTML pages in this way.
+1. I'm hard coding to experiment with folder loading, so it can only load multihash listed in the example. 
+
+## Road Map
+
+- Traverse DAG, support all kinds of folders to be open.
+- [Use Stream API to deal with large folders.](https://yq.aliyun.com/articles/236593?spm=a2c4e.11153940.blogcont236587.14.2d559182Moi5sK)
