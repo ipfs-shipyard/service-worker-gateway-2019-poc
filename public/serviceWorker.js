@@ -1,4 +1,4 @@
-/* global self, Response, Ipfs */
+/* global self, Response, Ipfs, cache */
 // inject Ipfs to global
 importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
 
@@ -55,11 +55,28 @@ async function getFile(hash) {
 }
 
 const headers = { status: 200, statusText: 'OK', headers: {} };
+/** Given a multihash, return first file in DAG as HTTP Response.
+ * If first file is actually a folder, add files to cache and return first file that is not a folder.
+ */
 async function RespondFromIpfs(multihash) {
   try {
     const files = await getFile(multihash);
     console.log(files);
-    return new Response(files[1].content.toString(), headers);
+    if (files[0].type === 'dir') {
+      /*
+        {depth: 0, name: "QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV", path: "QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV", size: 344, hash: Uint8Array(34), type: "dir", content: undefined}
+        ,
+        {depth: 1, name: "style.css", path: "QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV/style.css", size: 30, hash: Uint8Array(34), …}
+      */
+      await Promise.all([files[1], files[2]].map(async file => {
+        const url = file.path.split(files[0].path)[1];
+        console.log(url)
+        const cache = await caches.open('v1');
+        return cache.put(url, new Response(file.content, headers));
+      }));
+      return new Response(files[1].content, headers);
+    }
+    return new Response(files[0].content, headers);
   } catch (error) {
     console.error(error);
   }
