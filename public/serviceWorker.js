@@ -84,13 +84,20 @@ async function RespondFromIpfs(multihash) {
   }
 }
 
-async function tryMatchCache(multihash) {
+async function tryMatchCache(multihashOrContentName) {
   try {
-    const cachedContent = await caches.match(multihash);
-    if (cachedContent) return cachedContent;
+    const cachedContent = await caches.match(multihashOrContentName);
+    if (cachedContent) {
+      const contentName = multihashOrContentName;
+      console.log(`Browser is requesting ${contentName}, trying to response it with content cached from IPFS.`);
+      return cachedContent;
+    }
   } catch (error) {
-    return RespondFromIpfs(multihash);
+    console.log(error);
   }
+  // now sure it's multihash
+  const multihash = multihashOrContentName;
+  console.log(`Browser is requesting ${multihash}, trying to get files from IPFS.`);
   return RespondFromIpfs(multihash);
 }
 
@@ -103,8 +110,10 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   console.log(`Service worker getting ${event.request.url}`);
   if (event.request.url.startsWith(`${self.location.origin}/ipfs`)) {
-    const multihash = event.request.url.split('/ipfs/')[1];
-    console.log(`The hash is ${multihash}, trying to response it with content got from IPFS.`);
-    event.respondWith(tryMatchCache(multihash));
+    // 1. we will goto /ipfs/multihash so this will be a multihash
+    // 2. if returned file of that multihash is a HTML, it will request for other content
+    // so this will be content name. We may had cached this file in 1, so subsequent request will hit the cache.
+    const multihashOrContentName = event.request.url.split('/ipfs/')[1];
+    event.respondWith(tryMatchCache(multihashOrContentName));
   }
 });
