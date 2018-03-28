@@ -68,18 +68,30 @@ async function RespondFromIpfs(multihash) {
         ,
         {depth: 1, name: "style.css", path: "QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV/style.css", size: 30, hash: Uint8Array(34), …}
       */
-      await Promise.all([files[1], files[2]].map(async file => {
-        const url = file.path.split(files[0].path)[1];
-        console.log(url)
-        const cache = await caches.open('v1');
-        return cache.put(url, new Response(file.content, headers));
-      }));
+      await Promise.all(
+        [files[1], files[2]].map(async file => {
+          const url = file.path.split(files[0].path)[1];
+          console.log(url);
+          const cache = await caches.open('v1');
+          return cache.put(url, new Response(file.content, headers));
+        })
+      );
       return new Response(files[1].content, headers);
     }
     return new Response(files[0].content, headers);
   } catch (error) {
     console.error(error);
   }
+}
+
+async function tryMatchCache(multihash) {
+  try {
+    const cachedContent = await caches.match(multihash);
+    if (cachedContent) return cachedContent;
+  } catch (error) {
+    return RespondFromIpfs(multihash);
+  }
+  return RespondFromIpfs(multihash);
 }
 
 self.addEventListener('install', event => {
@@ -93,6 +105,6 @@ self.addEventListener('fetch', event => {
   if (event.request.url.startsWith(`${self.location.origin}/ipfs`)) {
     const multihash = event.request.url.split('/ipfs/')[1];
     console.log(`The hash is ${multihash}, trying to response it with content got from IPFS.`);
-    event.respondWith(RespondFromIpfs(multihash));
+    event.respondWith(tryMatchCache(multihash));
   }
 });
