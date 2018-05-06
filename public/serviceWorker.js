@@ -4,19 +4,19 @@
 // inject Ipfs to global
 importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
 // inject utils and resolvers to global
+importScripts('./require.js');
 importScripts('./pathUtil.js');
 importScripts('./resolver.js');
 /* inject dependencies to global
     those who use module.exports use ./require.js polyfill
 */
-importScripts('./require.js');
 const fileType = require('https://unpkg.com/file-type@7.7.1/index.js');
 /* inject dependencies to global
     those who needs browserify gets browserify by https://wzrd.in/
 */
 importScripts('https://wzrd.in/standalone/mime-types');
 importScripts('https://wzrd.in/standalone/readable-stream');
-importScripts('https://wzrd.in/standalone/https://wzrd.in/standalone/pull-stream');
+importScripts('https://wzrd.in/standalone/pull-stream');
 importScripts('https://wzrd.in/standalone/stream-to-pull-stream');
 
 let ipfsNode = null;

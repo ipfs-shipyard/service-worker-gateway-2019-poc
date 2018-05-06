@@ -2,6 +2,7 @@
 /* global self, importScripts */
 function require(moduleName) {
   self.module = { exports: null };
+  self.global = {};
   importScripts(moduleName);
-  return self.module.exports;
+  return Object.keys(self.global).length > 0 ? self.global[Object.keys(self.global)[0]] : self.module.exports;
 }
