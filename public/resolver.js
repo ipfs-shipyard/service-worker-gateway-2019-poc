@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-/* global importScripts, Cids, Multihashes, Unixfs, promisify, splitPath, async, renderFolder */
+/* global importScripts, Cids, Multihashes, IpfsUnixfs, promisify, splitPath, async, renderFolder */
 importScripts('https://unpkg.com/cids@0.5.3/dist/index.min.js');
 importScripts('https://unpkg.com/multihashes@0.4.13/dist/index.min.js');
 importScripts('https://npmcdn.com/ipfs-unixfs@0.1.14/dist/index.min.js');
@@ -88,7 +88,7 @@ const resolveMultihash = promisify((ipfs, path, callback) => {
       ipfs.dag.get(cid, (error, dagResult) => {
         if (error) return callback(err);
 
-        const dagDataObj = Unixfs.unmarshal(dagResult.value.data);
+        const dagDataObj = IpfsUnixfs.unmarshal(dagResult.value.data);
         if (dagDataObj.type === 'directory') {
           const isDirErr = new Error('This dag node is a directory');
           // add memo (last multihash) as a fileName so it can be used by resolveDirectory
