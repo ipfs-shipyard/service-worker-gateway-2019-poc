@@ -1,14 +1,14 @@
 /* eslint-disable no-unused-vars */
-/* global importScripts, Cids, Multihashes, Unixfs, promisify, splitPath, async */
+/* global importScripts, Cids, Multihashes, Unixfs, promisify, splitPath, async, renderFolder */
 importScripts('https://unpkg.com/cids@0.5.3/dist/index.min.js');
 importScripts('https://unpkg.com/multihashes@0.4.13/dist/index.min.js');
 importScripts('https://npmcdn.com/ipfs-unixfs@0.1.14/dist/index.min.js');
 importScripts('https://unpkg.com/promisify-es6@1.0.3/index.min.js');
 importScripts('https://unpkg.com/async@2.6.0/dist/async.js');
+importScripts('./renderFolder.js');
 
 const INDEX_HTML_FILES = ['index.html', 'index.htm', 'index.shtml'];
 function getIndexHtml(links) {
-
   return links.filter(link => INDEX_HTML_FILES.indexOf(link.name) !== -1);
 }
 
@@ -27,7 +27,7 @@ const resolveDirectory = promisify((ipfs, path, multihash, callback) => {
       return callback(null, indexFiles);
     }
 
-    return callback(null, dirView.render(path, dagNode.links));
+    return callback(null, renderFolder(path, dagNode.links));
   });
 });
 
