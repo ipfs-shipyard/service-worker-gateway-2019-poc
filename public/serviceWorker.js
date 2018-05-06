@@ -1,7 +1,8 @@
-/* global self, Response, Ipfs, cache, resolveDirectory, resolveMultihash */
+/* global importScripts, self, Response, Ipfs, caches, resolveDirectory, resolveMultihash, joinURLParts, removeTrailingSlash */
 // inject Ipfs to global
 importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
 // inject resolvers to global
+importScripts('./pathUtil.js');
 importScripts('./resolver.js');
 
 let ipfsNode = null;
@@ -21,7 +22,7 @@ function initIPFS() {
   });
 }
 
-/** helper function to always get a node that's ready to use
+/** helper function to always get an ipfs node that's ready to use
  modified from https://github.com/linonetwo/pants-control/blob/0e6cb6d8c319ede051a9aa5279f3a0192e578b9f/src/ipfs/IPFSNode.js#L27 */
 function getReadyNode() {
   if (ipfsNode === null) {
@@ -40,19 +41,114 @@ function getReadyNode() {
   });
 }
 
-/** this will get an array of file, type definition can be found at
- https://github.com/linonetwo/pants-control/commit/9d2e44319bb4932dfd1f29bb5f168011b3407de4#diff-f2c5be8b23901c9c4d8cbe549156bb7fR6 */
-async function getFile(hash) {
-  const node = await getReadyNode();
-  return new Promise((resolve, reject) => {
-    node.files.get(hash, (err, files) => {
-      if (err) {
-        return reject(err);
-      }
-      if (files) {
-        resolve(files);
+function handleGatewayResolverError(ipfs, path, err) {
+  if (err) {
+    console.error('err: ', err.toString(), ' fileName: ', err.fileName);
+
+    const errorToString = err.toString();
+    // switch case with true feels so wrong.
+    switch (true) {
+      case errorToString === 'Error: This dag node is a directory':
+        resolveDirectory(ipfs, path, err.fileName, (error, data) => {
+          if (error) {
+            console.error(error);
+            return reply(error.toString()).code(500);
+          }
+          if (typeof data === 'string') {
+            // no index file found
+            if (!path.endsWith('/')) {
+              // for a directory, if URL doesn't end with a /
+              // append / and redirect permanent to that URL
+              return reply.redirect(`${path}/`).permanent(true);
+            } 
+              // send directory listing
+              return reply(data);
+            
+          } 
+            // found index file
+            // redirect to URL/<found-index-file>
+            return reply.redirect(joinURLParts(path, data[0].name));
+          
+        });
+        break;
+      case errorToString.startsWith('Error: no link named'):
+        return reply(errorToString).code(404);
+      case errorToString.startsWith('Error: multihash length inconsistent'):
+      case errorToString.startsWith('Error: Non-base58 character'):
+        return reply({ Message: errorToString, code: 0 }).code(400);
+      default:
+        console.error(err);
+        return reply({ Message: errorToString, code: 0 }).code(500);
+    }
+  }
+}
+
+async function getFile(path) {
+  const ipfs = await getReadyNode();
+
+  resolveMultihash(ipfs, path, (err, data) => {
+    if (err) {
+      return handleGatewayResolverError(err);
+    }
+
+    const stream = ipfs.files.catReadableStream(data.multihash);
+    stream.once('error', error => {
+      if (error) {
+        console.error(error);
+        return reply(error.toString()).code(500);
       }
     });
+
+    if (path.endsWith('/')) {
+      // remove trailing slash for files
+      return reply.redirect(removeTrailingSlash(path)).permanent(true);
+    } 
+      if (!stream._read) {
+        stream._read = () => {};
+        stream._readableState = {};
+      }
+
+      // response.continue()
+      let filetypeChecked = false;
+      const stream2 = new Stream.PassThrough({ highWaterMark: 1 });
+      stream2.on('error', error => {
+        console.error('stream2 error: ', error);
+      });
+
+      const response = reply(stream2).hold();
+
+      pull(
+        toPull.source(stream),
+        pull.through(chunk => {
+          // Check file type.  do this once.
+          if (chunk.length > 0 && !filetypeChecked) {
+            console.log('got first chunk');
+            const fileSignature = fileType(chunk);
+            console.log('file type: ', fileSignature);
+
+            filetypeChecked = true;
+            const mimeType = mime.lookup(fileSignature ? fileSignature.ext : null);
+
+            console.log('path ', path);
+            console.log('mime-type ', mimeType);
+
+            if (mimeType) {
+              console.log('writing mimeType');
+
+              response.header('Content-Type', mime.contentType(mimeType)).send();
+            } else {
+              response.send();
+            }
+          }
+
+          stream2.write(chunk);
+        }),
+        pull.onEnd(() => {
+          console.log('stream ended.');
+          stream2.end();
+        }),
+      );
+    
   });
 }
 
@@ -76,7 +172,7 @@ async function RespondFromIpfs(multihash) {
           console.log(url);
           const cache = await caches.open('v1');
           return cache.put(url, new Response(file.content, headers));
-        })
+        }),
       );
       return new Response(files[1].content, headers);
     }

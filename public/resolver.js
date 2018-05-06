@@ -1,8 +1,10 @@
-/* global Cids, Multihashes, Unixfs, promisif */
+/* eslint-disable no-unused-vars */
+/* global importScripts, Cids, Multihashes, Unixfs, promisify, splitPath */
 importScripts('https://unpkg.com/cids@0.5.3/dist/index.min.js');
 importScripts('https://unpkg.com/multihashes@0.4.13/dist/index.min.js');
 importScripts('https://npmcdn.com/ipfs-unixfs@0.1.14/dist/index.min.js');
 importScripts('https://unpkg.com/promisify-es6@1.0.3/index.min.js');
+importScripts('https://unpkg.com/async@2.6.0/dist/async.js');
 
 function getIndexFiles(links) {
   const INDEX_HTML_FILES = ['index.html', 'index.htm', 'index.shtml'];
@@ -11,7 +13,7 @@ function getIndexFiles(links) {
 }
 
 const resolveDirectory = promisify((ipfs, path, multihash, callback) => {
-  mh.validate(mh.fromB58String(multihash));
+  Multihashes.validate(Multihashes.fromB58String(multihash));
 
   ipfs.object.get(multihash, { enc: 'base58' }, (err, dagNode) => {
     if (err) {
@@ -29,40 +31,36 @@ const resolveDirectory = promisify((ipfs, path, multihash, callback) => {
 });
 
 const resolveMultihash = promisify((ipfs, path, callback) => {
-  const parts = pathUtil.splitPath(path);
-  let firstMultihash = parts.shift();
+  const parts = splitPath(path);
+  const firstMultihash = parts.shift();
   let currentCid;
 
-  reduce(
+  async.reduce(
     parts,
     firstMultihash,
     (memo, item, next) => {
       try {
-        currentCid = new CID(mh.fromB58String(memo));
+        currentCid = new Cids(Multihashes.fromB58String(memo));
       } catch (err) {
         return next(err);
       }
-
-      log('memo: ', memo);
-      log('item: ', item);
 
       ipfs.dag.get(currentCid, (err, result) => {
         if (err) {
           return next(err);
         }
 
-        let dagNode = result.value;
+        const dagNode = result.value;
         // find multihash of requested named-file in current dagNode's links
         let multihashOfNextFile;
-        let nextFileName = item;
+        const nextFileName = item;
 
-        const links = dagNode.links;
+        const { links } = dagNode;
 
-        for (let link of links) {
+        for (const link of links) {
           if (link.name === nextFileName) {
             // found multihash of requested named-file
-            multihashOfNextFile = mh.toB58String(link.multihash);
-            log('found multihash: ', multihashOfNextFile);
+            multihashOfNextFile = Multihashes.toB58String(link.multihash);
             break;
           }
         }
@@ -81,17 +79,17 @@ const resolveMultihash = promisify((ipfs, path, callback) => {
 
       let cid;
       try {
-        cid = new CID(mh.fromB58String(result));
-      } catch (err) {
-        return callback(err);
+        cid = new Cids(Multihashes.fromB58String(result));
+      } catch (error) {
+        return callback(error);
       }
 
-      ipfs.dag.get(cid, (err, dagResult) => {
-        if (err) return callback(err);
+      ipfs.dag.get(cid, (error, dagResult) => {
+        if (error) return callback(err);
 
-        let dagDataObj = Unixfs.unmarshal(dagResult.value.data);
+        const dagDataObj = Unixfs.unmarshal(dagResult.value.data);
         if (dagDataObj.type === 'directory') {
-          let isDirErr = new Error('This dag node is a directory');
+          const isDirErr = new Error('This dag node is a directory');
           // add memo (last multihash) as a fileName so it can be used by resolveDirectory
           isDirErr.fileName = result;
           return callback(isDirErr);
@@ -99,6 +97,6 @@ const resolveMultihash = promisify((ipfs, path, callback) => {
 
         callback(null, { multihash: result });
       });
-    }
+    },
   );
 });
