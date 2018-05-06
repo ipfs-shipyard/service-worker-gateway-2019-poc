@@ -36,7 +36,7 @@ const resolveMultihash = promisify((ipfs, path, callback) => {
   const firstMultihash = parts.shift();
   let currentCid;
 
-  async.reduce(
+  return async.reduce(
     parts,
     firstMultihash,
     (memo, item, next) => {
