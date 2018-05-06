@@ -1,6 +1,8 @@
-/* global self, Response, Ipfs, cache */
+/* global self, Response, Ipfs, cache, resolveDirectory, resolveMultihash */
 // inject Ipfs to global
 importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
+// inject resolvers to global
+importScripts('./resolver.js');
 
 let ipfsNode = null;
 
