@@ -55,42 +55,50 @@ function getReadyNode() {
   });
 }
 
+// Used in new Response()
+const headerOK = { status: 200, statusText: 'OK', headers: {} };
+const headerError = { status: 500, statusText: 'Service Worker Error', headers: {} };
+const headerNotFound = { status: 404, statusText: 'Not Found', headers: {} };
+const headerBadRequest = { status: 400, statusText: 'BadRequest', headers: {} };
+
 function handleGatewayResolverError(ipfs, path, err) {
   if (err) {
     console.error('err: ', err.toString(), ' fileName: ', err.fileName);
 
     const errorToString = err.toString();
-    // switch case with true feels so wrong.
+
     switch (true) {
       case errorToString === 'Error: This dag node is a directory':
-        resolveDirectory(ipfs, path, err.fileName, (error, data) => {
+        resolveDirectory(ipfs, path, err.fileName, (error, content) => {
           if (error) {
             console.error(error);
-            return reply(error.toString()).code(500);
+            return new Response(error.toString(), headerError);
           }
-          if (typeof data === 'string') {
+          // now content is rendered DOM string
+          if (typeof content === 'string') {
             // no index file found
             if (!path.endsWith('/')) {
               // for a directory, if URL doesn't end with a /
               // append / and redirect permanent to that URL
               return reply.redirect(`${path}/`).permanent(true);
             }
-            // send directory listing
-            return reply(data);
+            // send rendered directory list DOM string
+            return new Response(content, headerOK);
           }
           // found index file
           // redirect to URL/<found-index-file>
-          return reply.redirect(joinURLParts(path, data[0].name));
+          return reply.redirect(joinURLParts(path, content[0].name));
         });
         break;
       case errorToString.startsWith('Error: no link named'):
-        return reply(errorToString).code(404);
+        return new Response(errorToString, headerNotFound);
       case errorToString.startsWith('Error: multihash length inconsistent'):
       case errorToString.startsWith('Error: Non-base58 character'):
-        return reply({ Message: errorToString, code: 0 }).code(400);
+        // not sure if it needs JSON.stringify
+        return new Response(JSON.stringify({ Message: errorToString, code: 0 }), headerBadRequest);
       default:
         console.error(err);
-        return reply({ Message: errorToString, code: 0 }).code(500);
+        return new Response(JSON.stringify({ Message: errorToString, code: 0 }), headerError);
     }
   }
 }
@@ -107,7 +115,7 @@ async function getFile(path) {
     stream.once('error', error => {
       if (error) {
         console.error(error);
-        return reply(error.toString()).code(500);
+        return new Response(error.toString(), headerError);
       }
     });
 
@@ -120,33 +128,25 @@ async function getFile(path) {
       stream._readableState = {};
     }
 
-    // response.continue()
     let filetypeChecked = false;
     const stream2 = new readableStream.PassThrough({ highWaterMark: 1 });
     stream2.on('error', error => {
       console.error('stream2 error: ', error);
     });
 
-    const response = reply(stream2).hold();
+    const response = new Response(stream2, headerOK);
 
     pullStream(
       streamToPullStream.source(stream),
       pullStream.through(chunk => {
         // Check file type.  do this once.
         if (chunk.length > 0 && !filetypeChecked) {
-          console.log('got first chunk');
           const fileSignature = fileType(chunk);
-          console.log('file type: ', fileSignature);
 
           filetypeChecked = true;
           const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
 
-          console.log('path ', path);
-          console.log('mime-type ', mimeType);
-
           if (mimeType) {
-            console.log('writing mimeType');
-
             response.header('Content-Type', mimeTypes.contentType(mimeType)).send();
           } else {
             response.send();
@@ -156,14 +156,12 @@ async function getFile(path) {
         stream2.write(chunk);
       }),
       pullStream.onEnd(() => {
-        console.log('stream ended.');
         stream2.end();
       }),
     );
   });
 }
 
-const headers = { status: 200, statusText: 'OK', headers: {} };
 /** Given a multihash, return first file in DAG as HTTP Response.
  * If first file is actually a folder, add files to cache and return first file that is not a folder.
  */
@@ -182,12 +180,12 @@ async function RespondFromIpfs(multihash) {
           const url = file.path.split(files[0].path)[1];
           console.log(url);
           const cache = await caches.open('v1');
-          return cache.put(url, new Response(file.content, headers));
+          return cache.put(url, new Response(file.content, headerOK));
         }),
       );
-      return new Response(files[1].content, headers);
+      return new Response(files[1].content, headerOK);
     }
-    return new Response(files[0].content, headers);
+    return new Response(files[0].content, headerOK);
   } catch (error) {
     console.error(error);
   }
