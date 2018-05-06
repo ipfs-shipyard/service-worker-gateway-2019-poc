@@ -1,9 +1,21 @@
-/* global importScripts, self, Response, Ipfs, caches, resolveDirectory, resolveMultihash, joinURLParts, removeTrailingSlash */
+/* eslint-disable no-restricted-globals */
+/* global importScripts, self, Response, Ipfs, caches, mimeTypes, pullStream, readableStream, streamToPullStream, resolveDirectory, resolveMultihash, joinURLParts, removeTrailingSlash */
+
 // inject Ipfs to global
 importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
-// inject resolvers to global
+// inject utils and resolvers to global
 importScripts('./pathUtil.js');
 importScripts('./resolver.js');
+/* inject dependencies to global,
+    those who use module.exports use ./require.js polyfill
+    those who needs browserify gets browserify by https://wzrd.in/
+*/
+importScripts('./require.js');
+const fileType = require('https://unpkg.com/file-type@7.7.1/index.js');
+importScripts('https://wzrd.in/standalone/mime-types');
+importScripts('https://wzrd.in/standalone/readable-stream');
+importScripts('https://wzrd.in/standalone/https://wzrd.in/standalone/pull-stream');
+importScripts('https://wzrd.in/standalone/stream-to-pull-stream');
 
 let ipfsNode = null;
 
@@ -60,15 +72,13 @@ function handleGatewayResolverError(ipfs, path, err) {
               // for a directory, if URL doesn't end with a /
               // append / and redirect permanent to that URL
               return reply.redirect(`${path}/`).permanent(true);
-            } 
-              // send directory listing
-              return reply(data);
-            
-          } 
-            // found index file
-            // redirect to URL/<found-index-file>
-            return reply.redirect(joinURLParts(path, data[0].name));
-          
+            }
+            // send directory listing
+            return reply(data);
+          }
+          // found index file
+          // redirect to URL/<found-index-file>
+          return reply.redirect(joinURLParts(path, data[0].name));
         });
         break;
       case errorToString.startsWith('Error: no link named'):
@@ -102,53 +112,52 @@ async function getFile(path) {
     if (path.endsWith('/')) {
       // remove trailing slash for files
       return reply.redirect(removeTrailingSlash(path)).permanent(true);
-    } 
-      if (!stream._read) {
-        stream._read = () => {};
-        stream._readableState = {};
-      }
+    }
+    if (!stream._read) {
+      stream._read = () => {};
+      stream._readableState = {};
+    }
 
-      // response.continue()
-      let filetypeChecked = false;
-      const stream2 = new Stream.PassThrough({ highWaterMark: 1 });
-      stream2.on('error', error => {
-        console.error('stream2 error: ', error);
-      });
+    // response.continue()
+    let filetypeChecked = false;
+    const stream2 = new readableStream.PassThrough({ highWaterMark: 1 });
+    stream2.on('error', error => {
+      console.error('stream2 error: ', error);
+    });
 
-      const response = reply(stream2).hold();
+    const response = reply(stream2).hold();
 
-      pull(
-        toPull.source(stream),
-        pull.through(chunk => {
-          // Check file type.  do this once.
-          if (chunk.length > 0 && !filetypeChecked) {
-            console.log('got first chunk');
-            const fileSignature = fileType(chunk);
-            console.log('file type: ', fileSignature);
+    pullStream(
+      streamToPullStream.source(stream),
+      pullStream.through(chunk => {
+        // Check file type.  do this once.
+        if (chunk.length > 0 && !filetypeChecked) {
+          console.log('got first chunk');
+          const fileSignature = fileType(chunk);
+          console.log('file type: ', fileSignature);
 
-            filetypeChecked = true;
-            const mimeType = mime.lookup(fileSignature ? fileSignature.ext : null);
+          filetypeChecked = true;
+          const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
 
-            console.log('path ', path);
-            console.log('mime-type ', mimeType);
+          console.log('path ', path);
+          console.log('mime-type ', mimeType);
 
-            if (mimeType) {
-              console.log('writing mimeType');
+          if (mimeType) {
+            console.log('writing mimeType');
 
-              response.header('Content-Type', mime.contentType(mimeType)).send();
-            } else {
-              response.send();
-            }
+            response.header('Content-Type', mimeTypes.contentType(mimeType)).send();
+          } else {
+            response.send();
           }
+        }
 
-          stream2.write(chunk);
-        }),
-        pull.onEnd(() => {
-          console.log('stream ended.');
-          stream2.end();
-        }),
-      );
-    
+        stream2.write(chunk);
+      }),
+      pullStream.onEnd(() => {
+        console.log('stream ended.');
+        stream2.end();
+      }),
+    );
   });
 }
 
