@@ -4,7 +4,7 @@ function splitPath(path) {
     path = path.substring(0, path.length - 1);
   }
 
-  return path.substring(6).split('/');
+  return path.split('/');
 }
 
 function removeLeadingSlash(url) {

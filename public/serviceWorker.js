@@ -106,7 +106,7 @@ function handleGatewayResolverError(ipfs, path, err) {
 async function getFile(path) {
   const ipfs = await getReadyNode();
 
-  resolveMultihash(ipfs, path, (err, data) => {
+  return resolveMultihash(ipfs, path, (err, data) => {
     if (err) {
       return handleGatewayResolverError(err);
     }
@@ -162,52 +162,6 @@ async function getFile(path) {
   });
 }
 
-/** Given a multihash, return first file in DAG as HTTP Response.
- * If first file is actually a folder, add files to cache and return first file that is not a folder.
- */
-async function RespondFromIpfs(multihash) {
-  try {
-    const files = await getFile(multihash);
-    console.log(files);
-    if (files[0].type === 'dir') {
-      /*
-        {depth: 0, name: "QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV", path: "QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV", size: 344, hash: Uint8Array(34), type: "dir", content: undefined}
-        ,
-        {depth: 1, name: "style.css", path: "QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV/style.css", size: 30, hash: Uint8Array(34), …}
-      */
-      await Promise.all(
-        [files[1], files[2]].map(async file => {
-          const url = file.path.split(files[0].path)[1];
-          console.log(url);
-          const cache = await caches.open('v1');
-          return cache.put(url, new Response(file.content, headerOK));
-        }),
-      );
-      return new Response(files[1].content, headerOK);
-    }
-    return new Response(files[0].content, headerOK);
-  } catch (error) {
-    console.error(error);
-  }
-}
-
-async function tryMatchCache(multihashOrContentName) {
-  try {
-    const cachedContent = await caches.match(multihashOrContentName);
-    if (cachedContent) {
-      const contentName = multihashOrContentName;
-      console.log(`Browser is requesting ${contentName}, trying to response it with content cached from IPFS.`);
-      return cachedContent;
-    }
-  } catch (error) {
-    console.log(error);
-  }
-  // now sure it's multihash
-  const multihash = multihashOrContentName;
-  console.log(`Browser is requesting ${multihash}, trying to get files from IPFS.`);
-  return RespondFromIpfs(multihash);
-}
-
 self.addEventListener('install', event => {
   // kick previous sw after install
   console.log('Service worker is installing.');
@@ -221,6 +175,6 @@ self.addEventListener('fetch', event => {
     // 2. if returned file of that multihash is a HTML, it will request for other content
     // so this will be content name. We may had cached this file in 1, so subsequent request will hit the cache.
     const multihashOrContentName = event.request.url.split('/ipfs/')[1];
-    event.respondWith(tryMatchCache(multihashOrContentName));
+    event.respondWith(getFile(multihashOrContentName));
   }
 });
