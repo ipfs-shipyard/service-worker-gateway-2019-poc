@@ -1,13 +1,13 @@
 /* eslint-disable no-unused-vars */
-/* global importScripts, Cids, Multihashes, Unixfs, promisify, splitPath */
+/* global importScripts, Cids, Multihashes, Unixfs, promisify, splitPath, async */
 importScripts('https://unpkg.com/cids@0.5.3/dist/index.min.js');
 importScripts('https://unpkg.com/multihashes@0.4.13/dist/index.min.js');
 importScripts('https://npmcdn.com/ipfs-unixfs@0.1.14/dist/index.min.js');
 importScripts('https://unpkg.com/promisify-es6@1.0.3/index.min.js');
 importScripts('https://unpkg.com/async@2.6.0/dist/async.js');
 
-function getIndexFiles(links) {
-  const INDEX_HTML_FILES = ['index.html', 'index.htm', 'index.shtml'];
+const INDEX_HTML_FILES = ['index.html', 'index.htm', 'index.shtml'];
+function getIndexHtml(links) {
 
   return links.filter(link => INDEX_HTML_FILES.indexOf(link.name) !== -1);
 }
@@ -20,9 +20,10 @@ const resolveDirectory = promisify((ipfs, path, multihash, callback) => {
       return callback(err);
     }
 
-    const indexFiles = getIndexFiles(dagNode.links);
-
+    // if it is a web site, return index.html
+    const indexFiles = getIndexHtml(dagNode.links);
     if (indexFiles.length > 0) {
+      // TODO: add *.css and *.ico to cache
       return callback(null, indexFiles);
     }
 

@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals, import/no-unresolved */
-/* global importScripts, self, Response, Ipfs, caches, mimeTypes, pullStream, readableStream, streamToPullStream, resolveDirectory, resolveMultihash, joinURLParts, removeTrailingSlash */
+/* global importScripts, self, Response, Ipfs, mimeTypes, pullStream, readableStream, streamToPullStream, resolveDirectory, resolveMultihash, joinURLParts, removeTrailingSlash */
 
 // inject Ipfs to global
 importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
