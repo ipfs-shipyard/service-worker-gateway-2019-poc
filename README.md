@@ -18,3 +18,9 @@ This is a "create-react-app" app, so just:
 ## Road Map
 
 - There will be a pull request to [ipfs-service-worker](https://github.com/ipfs/ipfs-service-worker) ones this project is done.
+
+## Reference
+
+- [Discussion](https://github.com/ipfs/ipfs-service-worker/issues/11)
+- [JS-IPFS-Gateway](https://github.com/ipfs/js-ipfs/tree/master/src/http/gateway)
+- [readable-stream in SW](https://developers.google.com/web/updates/2016/06/sw-readablestreams)
