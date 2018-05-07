@@ -1,0 +1,35 @@
+{
+  "name": "service-worker-gateway",
+  "version": "0.1.0",
+  "description": "IPFS gateway fully running on a service worker",
+  "main": "src/index.js",
+  "scripts": {
+    "lint": "aegir lint",
+    "release": "aegir release",
+    "build": "aegir build",
+    "test": "aegir test",
+    "test:node": "aegir test --target node"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ipfs-shipyard/service-worker-gateway.git"
+  },
+  "keywords": [
+    "ipfs",
+    "service",
+    "worker",
+    "gateway"
+  ],
+  "author": "Vasco Santos <vasco.santos@moxy.studio>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ipfs-shipyard/service-worker-gateway/issues"
+  },
+  "homepage": "https://github.com/ipfs-shipyard/service-worker-gateway#readme",
+  "dependencies": {
+    "ipfs": "^0.28.2",
+  },
+  "devDependencies": {
+    "aegir": "^12.1.3"
+  }
+}
