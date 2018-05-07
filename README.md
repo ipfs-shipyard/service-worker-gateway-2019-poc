@@ -1,6 +1,6 @@
-# ipfs-browser-gateway
+# service-worker-gateway
 
-Given an IPFS multihash, print the content and try to render web page if the content is HTML.
+A IPFS gateway fully running on a Service Worker
 
 ## Development
 
