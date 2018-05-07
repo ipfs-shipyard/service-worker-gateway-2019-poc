@@ -1,0 +1,64 @@
+{
+  "parser": "babel-eslint",
+  "extends": [
+    "airbnb",
+    "plugin:flowtype/recommended",
+    "plugin:jest/recommended",
+    "prettier",
+    "prettier/flowtype",
+    "prettier/react",
+    "prettier/standard"
+  ],
+  "plugins": ["flowtype", "prettier", "jest"],
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "env": {
+    "es6": true,
+    "node": true,
+    "jest/globals": true
+  },
+  "rules": {
+    "comma-dangle": 1,
+    "arrow-parens": ["off"],
+    "consistent-return": "off",
+    "no-underscore-dangle": "off",
+    "no-unused-expressions": "off",
+    "flowtype/define-flow-type": 1,
+    "flowtype/use-flow-type": 1,
+    "generator-star-spacing": "off",
+    "import/no-unresolved": "error",
+    "import/no-extraneous-dependencies": "off",
+    "no-console": "off",
+    "promise/no-native": "off",
+    "no-loop-func": "off",
+    "guard-for-in": "off",
+    "react/sort-comp": [
+      "error",
+      {
+        "order": ["type-annotations", "static-methods", "lifecycle", "everything-else", "render"]
+      }
+    ],
+    "react/no-multi-comp": "off",
+    "no-param-reassign": "off",
+    "no-restricted-syntax": "off",
+    "max-len": "off",
+    "react/jsx-no-bind": "off",
+    "react/jsx-filename-extension": ["error", { "extensions": [".js", ".jsx"] }],
+    "jsx-a11y/anchor-is-valid": [
+      "error",
+      {
+        "components": [],
+        "specialLink": ["hrefLeft", "hrefRight"],
+        "aspects": ["noHref", "invalidHref", "preferButton"]
+      }
+    ]
+  },
+  "globals": {
+    "window": true,
+    "document": true
+  }
+}
