@@ -80,14 +80,14 @@ function handleGatewayResolverError(ipfs, path, err) {
             if (!path.endsWith('/')) {
               // for a directory, if URL doesn't end with a /
               // append / and redirect permanent to that URL
-              return new Response('', headerOK).redirect(`${path}/`);
+              return Response.redirect(`${path}/`);
             }
             // send rendered directory list DOM string
             return new Response(content, headerOK);
           }
           // found index file
           // redirect to URL/<found-index-file>
-          return new Response('', headerOK).redirect(joinURLParts(path, content[0].name));
+          return Response.redirect(joinURLParts(path, content[0].name));
         });
         break;
       case errorToString.startsWith('Error: no link named'):
@@ -118,7 +118,7 @@ async function getFile(path) {
 
       if (path.endsWith('/')) {
         // remove trailing slash for files
-        return new Response('', headerOK).redirect(removeTrailingSlash(path));
+        return Response.redirect(removeTrailingSlash(path));
       }
       if (!stream._read) {
         stream._read = () => {};
@@ -161,8 +161,8 @@ async function getFile(path) {
       return response;
     })
     .catch(err => {
-      console.error(err);
-      return handleGatewayResolverError(err);
+      console.info('Handling Error: ', err);
+      return handleGatewayResolverError(ipfs, path, err);
     });
 }
 
