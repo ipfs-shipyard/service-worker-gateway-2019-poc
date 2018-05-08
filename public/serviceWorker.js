@@ -105,61 +105,55 @@ function handleGatewayResolverError(ipfs, path, err) {
 }
 
 async function getFile(path) {
-  const ipfs = await getReadyNode();
+  if (path.endsWith('/')) {
+    // remove trailing slash for files
+    return Response.redirect(`${ipfsRoute}/${removeTrailingSlash(path)}`);
+  }
 
+  const ipfs = await getReadyNode();
   return resolveMultihash(ipfs, path)
     .then(data => {
-      const stream = ipfs.files.catReadableStream(data.multihash);
-      stream.once('error', error => {
-        if (error) {
-          console.error(error);
-          return new Response(error.toString(), headerError);
-        }
-      });
-
-      if (path.endsWith('/')) {
-        // remove trailing slash for files
-        return Response.redirect(`${ipfsRoute}/${removeTrailingSlash(path)}`);
-      }
-      if (!stream._read) {
-        stream._read = () => {};
-        stream._readableState = {};
-      }
-
+      // return Response only after first chunk being checked
       let filetypeChecked = false;
+      return new Promise((resolve, reject) => {
+        ipfs.cat(data.multihash, (err, stream) => {
+          if (err) {
+            console.error(err);
+            resolve(new Response(err.toString(), headerError));
+          }
+          stream.on('error', (err) => {
+            console.error(err);
+            resolve(new Response(err.toString(), headerError));
+          });
 
-      const stream2 = new readableStream.PassThrough({ highWaterMark: 1 });
-      stream2.on('error', error => {
-        console.error('stream2 error: ', error);
-      });
-
-      const response = new Response(stream2, headerOK);
-
-      pullStream(
-        streamToPullStream.source(stream),
-        pullStream.through(chunk => {
-          // Check file type.  do this once.
-          if (chunk.length > 0 && !filetypeChecked) {
-            const fileSignature = fileType(chunk);
-
-            filetypeChecked = true;
-            const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
-
-            if (mimeType) {
-              response.header('Content-Type', mimeTypes.contentType(mimeType)).send();
-            } else {
-              response.send();
-            }
+          // TODO: maybe useless? I guess it's for earlier version of ipfs, or for pullStream
+          if (!stream._read) {
+            stream._read = () => {};
+            stream._readableState = {};
           }
 
-          stream2.write(chunk);
-        }),
-        pullStream.onEnd(() => {
-          stream2.end();
-        }),
-      );
-
-      return response;
+          stream.on('data', chunk => {
+            // check mime on first chunk
+            if (filetypeChecked) return;
+            filetypeChecked = true;
+            // return Response with mime type
+            const fileSignature = fileType(chunk);
+            const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
+            if (mimeType) {
+              console.log(`returning stream with ${mimeType}`);
+              resolve(
+                new Response(stream, {
+                  ...headerOK,
+                  headers: { 'Content-Type': mimeTypes.contentType(mimeType) },
+                }),
+              );
+            } else {
+              console.log('return stream without mimeType');
+              resolve(new Response(stream, headerOK));
+            }
+          });
+        });
+      });
     })
     .catch(err => handleGatewayResolverError(ipfs, path, err));
 }
