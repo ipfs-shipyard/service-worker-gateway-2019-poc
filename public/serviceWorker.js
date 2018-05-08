@@ -63,7 +63,7 @@ const headerBadRequest = { status: 400, statusText: 'BadRequest', headers: {} };
 
 function handleGatewayResolverError(ipfs, path, err) {
   if (err) {
-    console.info(`fileName: ${err.fileName} , Handling ${err.toString()}`);
+    console.info(`fileName: ${err.fileName} , handleGatewayResolverError() Handling ${err.toString()}`);
 
     const errorToString = err.toString();
 
@@ -162,7 +162,6 @@ async function getFile(path) {
       return response;
     })
     .catch(err => {
-      console.info(`Passing Error to handler: ${err}`);
       return handleGatewayResolverError(ipfs, path, err);
     });
 }
