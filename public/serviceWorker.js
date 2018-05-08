@@ -113,45 +113,44 @@ async function getFile(path) {
   const ipfs = await getReadyNode();
   return resolveMultihash(ipfs, path)
     .then(data => {
-      // return Response only after first chunk being checked
-      let filetypeChecked = false;
+      const stream = ipfs.files.catReadableStream(data.multihash);
+      console.log(`Getting stream ${stream}`);
+
       return new Promise((resolve, reject) => {
-        ipfs.cat(data.multihash, (err, stream) => {
-          if (err) {
-            console.error(err);
-            resolve(new Response(err.toString(), headerError));
+        stream.once('error', error => {
+          if (error) {
+            console.error(error);
+            resolve(new Response(error.toString(), headerError));
           }
-          stream.on('error', (err) => {
-            console.error(err);
-            resolve(new Response(err.toString(), headerError));
-          });
+        });
 
-          // TODO: maybe useless? I guess it's for earlier version of ipfs, or for pullStream
-          if (!stream._read) {
-            stream._read = () => {};
-            stream._readableState = {};
+        // TODO: maybe useless? I guess it's for earlier version of ipfs, or for pullStream
+        if (!stream._read) {
+          stream._read = () => {};
+          stream._readableState = {};
+        }
+
+        // return Response only after first chunk being checked
+        let filetypeChecked = false;
+        stream.on('data', chunk => {
+          // check mime on first chunk
+          if (filetypeChecked) return;
+          filetypeChecked = true;
+          // return Response with mime type
+          const fileSignature = fileType(chunk);
+          const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
+          if (mimeType) {
+            console.log(`returning stream with ${mimeType}`);
+            resolve(
+              new Response(stream, {
+                ...headerOK,
+                headers: { 'Content-Type': mimeTypes.contentType(mimeType) },
+              }),
+            );
+          } else {
+            console.log('return stream without mimeType');
+            resolve(new Response(stream, headerOK));
           }
-
-          stream.on('data', chunk => {
-            // check mime on first chunk
-            if (filetypeChecked) return;
-            filetypeChecked = true;
-            // return Response with mime type
-            const fileSignature = fileType(chunk);
-            const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
-            if (mimeType) {
-              console.log(`returning stream with ${mimeType}`);
-              resolve(
-                new Response(stream, {
-                  ...headerOK,
-                  headers: { 'Content-Type': mimeTypes.contentType(mimeType) },
-                }),
-              );
-            } else {
-              console.log('return stream without mimeType');
-              resolve(new Response(stream, headerOK));
-            }
-          });
         });
       });
     })
