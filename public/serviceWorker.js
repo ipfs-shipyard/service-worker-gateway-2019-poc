@@ -95,10 +95,10 @@ function handleGatewayResolverError(ipfs, path, err) {
       case errorToString.startsWith('Error: multihash length inconsistent'):
       case errorToString.startsWith('Error: Non-base58 character'):
         // not sure if it needs JSON.stringify
-        return new Response(JSON.stringify({ Message: errorToString, code: 0 }), headerBadRequest);
+        return new Response(errorToString, headerBadRequest);
       default:
         console.error(err);
-        return new Response(JSON.stringify({ Message: errorToString, code: 0 }), headerError);
+        return new Response(errorToString, headerError);
     }
   }
 }
