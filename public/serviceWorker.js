@@ -106,60 +106,64 @@ function handleGatewayResolverError(ipfs, path, err) {
 async function getFile(path) {
   const ipfs = await getReadyNode();
 
-  return resolveMultihash(ipfs, path, (err, data) => {
-    if (err) {
-      return handleGatewayResolverError(err);
-    }
-
-    const stream = ipfs.files.catReadableStream(data.multihash);
-    stream.once('error', error => {
-      if (error) {
-        console.error(error);
-        return new Response(error.toString(), headerError);
-      }
-    });
-
-    if (path.endsWith('/')) {
-      // remove trailing slash for files
-      return new Response('', headerOK).redirect(removeTrailingSlash(path));
-    }
-    if (!stream._read) {
-      stream._read = () => {};
-      stream._readableState = {};
-    }
-
-    let filetypeChecked = false;
-    const stream2 = new readableStream.PassThrough({ highWaterMark: 1 });
-    stream2.on('error', error => {
-      console.error('stream2 error: ', error);
-    });
-
-    const response = new Response(stream2, headerOK);
-
-    pullStream(
-      streamToPullStream.source(stream),
-      pullStream.through(chunk => {
-        // Check file type.  do this once.
-        if (chunk.length > 0 && !filetypeChecked) {
-          const fileSignature = fileType(chunk);
-
-          filetypeChecked = true;
-          const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
-
-          if (mimeType) {
-            response.header('Content-Type', mimeTypes.contentType(mimeType)).send();
-          } else {
-            response.send();
-          }
+  return resolveMultihash(ipfs, path)
+    .then(data => {
+      const stream = ipfs.files.catReadableStream(data.multihash);
+      stream.once('error', error => {
+        if (error) {
+          console.error(error);
+          return new Response(error.toString(), headerError);
         }
+      });
 
-        stream2.write(chunk);
-      }),
-      pullStream.onEnd(() => {
-        stream2.end();
-      }),
-    );
-  });
+      if (path.endsWith('/')) {
+        // remove trailing slash for files
+        return new Response('', headerOK).redirect(removeTrailingSlash(path));
+      }
+      if (!stream._read) {
+        stream._read = () => {};
+        stream._readableState = {};
+      }
+
+      let filetypeChecked = false;
+
+      const stream2 = new readableStream.PassThrough({ highWaterMark: 1 });
+      stream2.on('error', error => {
+        console.error('stream2 error: ', error);
+      });
+
+      const response = new Response(stream2, headerOK);
+
+      pullStream(
+        streamToPullStream.source(stream),
+        pullStream.through(chunk => {
+          // Check file type.  do this once.
+          if (chunk.length > 0 && !filetypeChecked) {
+            const fileSignature = fileType(chunk);
+
+            filetypeChecked = true;
+            const mimeType = mimeTypes.lookup(fileSignature ? fileSignature.ext : null);
+
+            if (mimeType) {
+              response.header('Content-Type', mimeTypes.contentType(mimeType)).send();
+            } else {
+              response.send();
+            }
+          }
+
+          stream2.write(chunk);
+        }),
+        pullStream.onEnd(() => {
+          stream2.end();
+        }),
+      );
+
+      return response;
+    })
+    .catch(err => {
+      console.error(err);
+      return handleGatewayResolverError(err);
+    });
 }
 
 self.addEventListener('install', event => {
@@ -170,6 +174,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('fetch', event => {
   console.log(`Service worker getting ${event.request.url}`);
+
   if (event.request.url.startsWith(`${self.location.origin}/ipfs`)) {
     // 1. we will goto /ipfs/multihash so this will be a multihash
     // 2. if returned file of that multihash is a HTML, it will request for other content
