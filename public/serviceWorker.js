@@ -16,6 +16,7 @@ const pullStream = require('http://localhost:5000/pull-stream.js');
 const streamToPullStream = require('http://localhost:5000/stream-to-pull-stream.js');
 const mimeTypes = require('http://localhost:5000/mime-types.js');
 
+const ipfsRoute = `ipfs`;
 
 let ipfsNode = null;
 
@@ -75,14 +76,15 @@ function handleGatewayResolverError(ipfs, path, err) {
               if (!path.endsWith('/')) {
                 // for a directory, if URL doesn't end with a /
                 // append / and redirect permanent to that URL
-                return Response.redirect(`${path}/`);
+                return Response.redirect(`${ipfsRoute}/${path}/`);
               }
+
               // send rendered directory list DOM string
               return new Response(content, headerOK);
             }
             // found index file
             // redirect to URL/<found-index-file>
-            return Response.redirect(joinURLParts(path, content[0].name));
+            return Response.redirect(joinURLParts(ipfsRoute, path, content[0].name));
           })
           .catch(error => {
             console.error(error);
@@ -117,7 +119,7 @@ async function getFile(path) {
 
       if (path.endsWith('/')) {
         // remove trailing slash for files
-        return Response.redirect(removeTrailingSlash(path));
+        return Response.redirect(`${ipfsRoute}/${removeTrailingSlash(path)}`);
       }
       if (!stream._read) {
         stream._read = () => {};
@@ -159,9 +161,7 @@ async function getFile(path) {
 
       return response;
     })
-    .catch(err => {
-      return handleGatewayResolverError(ipfs, path, err);
-    });
+    .catch(err => handleGatewayResolverError(ipfs, path, err));
 }
 
 self.addEventListener('install', event => {
@@ -171,13 +171,12 @@ self.addEventListener('install', event => {
 });
 
 self.addEventListener('fetch', event => {
-  console.log(`Service worker getting ${event.request.url}`);
-
-  if (event.request.url.startsWith(`${self.location.origin}/ipfs`)) {
-    // 1. we will goto /ipfs/multihash so this will be a multihash
+  if (event.request.url.startsWith(`${self.location.origin}/${ipfsRoute}`)) {
+    // 1. we will goto /${ipfsRoute}/multihash so this will be a multihash
     // 2. if returned file of that multihash is a HTML, it will request for other content
     // so this will be content name. We may had cached this file in 1, so subsequent request will hit the cache.
-    const multihashOrContentName = event.request.url.split('/ipfs/')[1];
+    const multihashOrContentName = event.request.url.split(`/${ipfsRoute}/`)[1];
+    console.log(`Service worker getting ${multihashOrContentName}`);
     event.respondWith(getFile(multihashOrContentName));
   }
 });
