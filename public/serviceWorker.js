@@ -14,10 +14,10 @@ const fileType = require('https://unpkg.com/file-type@7.7.1/index.js');
 /* inject dependencies to global
     those who needs browserify gets browserify by https://wzrd.in/
 */
-importScripts('https://wzrd.in/standalone/mime-types');
-importScripts('https://wzrd.in/standalone/readable-stream');
-importScripts('https://wzrd.in/standalone/pull-stream');
-importScripts('https://wzrd.in/standalone/stream-to-pull-stream');
+importScripts('http://localhost:5000/mime-types.js');
+importScripts('http://localhost:5000/readable-stream.js');
+importScripts('http://localhost:5000/pull-stream.js');
+importScripts('http://localhost:5000/stream-to-pull-stream.js');
 
 let ipfsNode = null;
 
