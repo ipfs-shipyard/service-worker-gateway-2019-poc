@@ -63,32 +63,33 @@ const headerBadRequest = { status: 400, statusText: 'BadRequest', headers: {} };
 
 function handleGatewayResolverError(ipfs, path, err) {
   if (err) {
-    console.error('err: ', err.toString(), ' fileName: ', err.fileName);
+    console.info(`fileName: ${err.fileName} , Handling ${err.toString()}`);
 
     const errorToString = err.toString();
 
     switch (true) {
       case errorToString === 'Error: This dag node is a directory':
-        resolveDirectory(ipfs, path, err.fileName, (error, content) => {
-          if (error) {
+        return resolveDirectory(ipfs, path, err.fileName)
+          .then(content => {
+            // now content is rendered DOM string
+            if (typeof content === 'string') {
+              // no index file found
+              if (!path.endsWith('/')) {
+                // for a directory, if URL doesn't end with a /
+                // append / and redirect permanent to that URL
+                return Response.redirect(`${path}/`);
+              }
+              // send rendered directory list DOM string
+              return new Response(content, headerOK);
+            }
+            // found index file
+            // redirect to URL/<found-index-file>
+            return Response.redirect(joinURLParts(path, content[0].name));
+          })
+          .catch(error => {
             console.error(error);
             return new Response(error.toString(), headerError);
-          }
-          // now content is rendered DOM string
-          if (typeof content === 'string') {
-            // no index file found
-            if (!path.endsWith('/')) {
-              // for a directory, if URL doesn't end with a /
-              // append / and redirect permanent to that URL
-              return Response.redirect(`${path}/`);
-            }
-            // send rendered directory list DOM string
-            return new Response(content, headerOK);
-          }
-          // found index file
-          // redirect to URL/<found-index-file>
-          return Response.redirect(joinURLParts(path, content[0].name));
-        });
+          });
         break;
       case errorToString.startsWith('Error: no link named'):
         return new Response(errorToString, headerNotFound);
@@ -161,7 +162,7 @@ async function getFile(path) {
       return response;
     })
     .catch(err => {
-      console.info('Handling Error: ', err);
+      console.info(`Passing Error to handler: ${err}`);
       return handleGatewayResolverError(ipfs, path, err);
     });
 }
