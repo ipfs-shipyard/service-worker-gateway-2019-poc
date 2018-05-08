@@ -1,5 +1,5 @@
 /* eslint-disable no-restricted-globals, import/no-unresolved */
-/* global importScripts, self, Response, Ipfs, mimeTypes, pullStream, readableStream, streamToPullStream, resolveDirectory, resolveMultihash, joinURLParts, removeTrailingSlash */
+/* global importScripts, self, Response, Ipfs, resolveDirectory, resolveMultihash, joinURLParts, removeTrailingSlash */
 
 // inject Ipfs to global
 importScripts('https://cdn.jsdelivr.net/npm/ipfs/dist/index.js');
@@ -11,13 +11,11 @@ importScripts('./resolver.js');
     those who use module.exports use ./require.js polyfill
 */
 const fileType = require('https://unpkg.com/file-type@7.7.1/index.js');
-/* inject dependencies to global
-    those who needs browserify gets browserify by https://wzrd.in/
-*/
-importScripts('http://localhost:5000/mime-types.js');
-importScripts('http://localhost:5000/readable-stream.js');
-importScripts('http://localhost:5000/pull-stream.js');
-importScripts('http://localhost:5000/stream-to-pull-stream.js');
+const readableStream = require('http://localhost:5000/readable-stream.js');
+const pullStream = require('http://localhost:5000/pull-stream.js');
+const streamToPullStream = require('http://localhost:5000/stream-to-pull-stream.js');
+const mimeTypes = require('http://localhost:5000/mime-types.js');
+
 
 let ipfsNode = null;
 
