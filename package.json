@@ -28,6 +28,7 @@
   "homepage": "https://github.com/ipfs-shipyard/service-worker-gateway#readme",
   "dependencies": {
     "ipfs": "^0.28.2",
+    "ipfs-postmsg-proxy": "^2.3.0"
   },
   "devDependencies": {
     "aegir": "^12.1.3"
