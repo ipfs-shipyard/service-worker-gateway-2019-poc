@@ -7,9 +7,12 @@
     "lint": "aegir lint",
     "release": "aegir release",
     "build": "aegir build",
-    "test": "aegir test",
-    "test:node": "aegir test --target node"
+    "test": "aegir test -t node"
   },
+  "pre-push": [
+    "lint",
+    "test"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ipfs-shipyard/service-worker-gateway.git"
@@ -31,6 +34,10 @@
     "ipfs-postmsg-proxy": "^2.3.0"
   },
   "devDependencies": {
-    "aegir": "^12.1.3"
+    "aegir": "^12.1.3",
+    "chai": "^4.1.2",
+    "clear-module": "^2.1.0",
+    "dirty-chai": "^2.0.1",
+    "service-worker-mock": "^1.9.2"
   }
 }

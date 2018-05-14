@@ -2,44 +2,7 @@
 
 'use strict'
 
-const IPFS = require('ipfs')
-const { createProxyServer } = require('ipfs-postmsg-proxy')
-
-let node
-
-/* start a IPFS node within the service worker */
-const startNode = () => {
-  node = new IPFS({
-    config: {
-      Addresses: {
-        Swarm: []
-      }
-    }
-  })
-  node.on('error', (error) => {
-    throw new Error('js-ipfs node errored', error)
-  })
-}
-
-/* get a ready to use IPFS node */
-const getNode = () => {
-  if (!node) {
-    startNode()
-  }
-
-  return new Promise(resolve => {
-    if (node.isOnline()) {
-      resolve(node)
-    } else {
-      node.on('ready', () => {
-        if (node.isOnline()) {
-          console.info('js-ipfs node in the service worker is ready')
-          resolve(node)
-        }
-      })
-    }
-  })
-}
+const ipfsNode = require('./ipfs/node')
 
 const headers = { status: 200, statusText: 'OK', headers: {} }
 
@@ -47,7 +10,7 @@ const headers = { status: 200, statusText: 'OK', headers: {} }
 const getFile = async (hash) => {
   try {
     // TODO handle files as in the js-ipfs gateway
-    const node = await getNode()
+    const node = await ipfsNode.get()
     const files = await node.files.get(hash)
     if (files[0].type === 'dir') {
       return new Response(files[1].content, headers)
@@ -79,17 +42,6 @@ self.addEventListener('install', (event) => {
 /* Activate service worker */
 self.addEventListener('activate', (event) => {
   console.info('service worker is being activated')
-  if (!node) {
-    startNode()
-  }
+  ipfsNode.start()
   event.waitUntil(self.clients.claim())
-})
-
-createProxyServer(() => node, {
-  addListener: self.addEventListener.bind(self),
-  removeListener: self.removeEventListener.bind(self),
-  async postMessage (data) {
-    const clients = await self.clients.matchAll()
-    clients.forEach(client => client.postMessage(data))
-  }
 })
