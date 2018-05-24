@@ -1,47 +1,60 @@
-/* global self, Response */
+/* global self */
 
 'use strict'
 
-const ipfsNode = require('./ipfs/node')
+const { createProxyServer } = require('ipfs-postmsg-proxy')
 
-const headers = { status: 200, statusText: 'OK', headers: {} }
+const ipfsHttpResponse = require('ipfs-http-response')
+const node = require('./node')
 
-/* get the file from ipfs using its hash */
-const getFile = async (hash) => {
-  try {
-    // TODO handle files as in the js-ipfs gateway
-    const node = await ipfsNode.get()
-    const files = await node.files.get(hash)
-    if (files[0].type === 'dir') {
-      return new Response(files[1].content, headers)
-    }
-    return new Response(files[0].content, headers)
-  } catch (error) {
-    throw new Error('IPFS file not found', error)
-  }
+let ipfsNode
+
+const fetchFile = (ipfsPath) => {
+  return new Promise((resolve, reject) => {
+    node.get()
+      .then((ipfsNode) => ipfsHttpResponse(ipfsNode, ipfsPath))
+      .then((resp) => resolve(resp))
+      .catch((err) => reject(err))
+  })
 }
 
-/* Fecth request */
+// Fetch request
 self.addEventListener('fetch', (event) => {
-  if (!event.request.url.startsWith(self.location.origin + '/ipfs')) {
-    return console.info(`Fetch not in scope: ${event.request.url}`)
+  const path = event.request.url
+
+  if (!path.startsWith(self.location.origin + '/ipfs')) {
+    return console.info(`Fetch not in scope: ${path}`)
   }
 
-  const multihash = event.request.url.split('/ipfs/')[1]
+  const regex = /^.+?(\/ipfs\/.+)$/g
+  const match = regex.exec(path)
+  const ipfsPath = match[1]
 
-  console.info(`Service worker trying to get ${multihash}`)
-  event.respondWith(getFile(multihash))
+  console.info(`Service worker trying to get ${ipfsPath}`)
+  event.respondWith(fetchFile(ipfsPath))
 })
 
-/* Install service worker */
+// Install service worker
 self.addEventListener('install', (event) => {
   console.info('service worker is being installed')
   event.waitUntil(self.skipWaiting())
 })
 
-/* Activate service worker */
+// Activate service worker
 self.addEventListener('activate', (event) => {
   console.info('service worker is being activated')
-  ipfsNode.start()
+  node.get().then((ipfs) => {
+    ipfsNode = ipfs
+  })
   event.waitUntil(self.clients.claim())
+})
+
+createProxyServer(() => ipfsNode, {
+  addListener: self.addEventListener && self.addEventListener.bind(self),
+  removeListener: self.removeEventListener && self.removeEventListener.bind(self),
+  async postMessage (data) {
+    // TODO: post back to the client that sent the message?
+    const clients = await self.clients.matchAll()
+    clients.forEach(client => client.postMessage(data))
+  }
 })

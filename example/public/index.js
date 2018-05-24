@@ -1,22 +1,34 @@
+/* global alert */
+
 'use strict'
 
 const { createProxyClient } = require('ipfs-postmsg-proxy')
+
+const swName = 'service-worker-bundle.js'
 let node
+
+navigator.serviceWorker.getRegistrations().then((registrations) => {
+  for (var registration of registrations) {
+    registration.unregister()
+  }
+})
 
 /* UI RELATED */
 
 document.querySelector('#id').addEventListener('click', async () => {
-  if (!node) return alert('Service worker not registered')
+  if (!node) {
+    return alert('Service worker not registered') // eslint-disable-line no-alert
+  }
   const { agentVersion, id } = await node.id()
-  alert(`${agentVersion} ${id}`)
+  alert(`${agentVersion} ${id}`) // eslint-disable-line no-alert
 })
 
 document.querySelector('#show').addEventListener('click', () => {
   const multihash = document.querySelector('#input').value
   if (!node) {
-    alert('Service worker not registered')
+    alert('Service worker not registered') // eslint-disable-line no-alert
   } else if (!node || !multihash || multihash.length < 4) {
-    alert(`invalid multihash received: ${multihash}`)
+    alert(`invalid multihash received: ${multihash}`) // eslint-disable-line no-alert
   } else {
     window.location.href = `/ipfs/${multihash}`
   }
@@ -39,16 +51,12 @@ document.querySelector('#serviceWorkerStop').addEventListener('click', () => {
 })
 
 /* Service worker related */
-
 const register = () => {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker-bundle.js')
+    navigator.serviceWorker.register(swName)
       .then((registration) => {
-        console.log('-> Registered the service worker successfuly')
-
         node = createProxyClient({
           addListener: navigator.serviceWorker.addEventListener.bind(navigator.serviceWorker),
-          removeListener: navigator.serviceWorker.removeEventListener.bind(navigator.serviceWorker),
           postMessage: (data) => navigator.serviceWorker.controller.postMessage(data)
         })
       })
