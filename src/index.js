@@ -23,26 +23,23 @@ self.addEventListener('fetch', (event) => {
   const path = event.request.url
 
   if (!path.startsWith(self.location.origin + '/ipfs')) {
-    return console.info(`Fetch not in scope: ${path}`)
+    return
   }
 
   const regex = /^.+?(\/ipfs\/.+)$/g
   const match = regex.exec(path)
   const ipfsPath = match[1]
 
-  console.info(`Service worker trying to get ${ipfsPath}`)
   event.respondWith(fetchFile(ipfsPath))
 })
 
 // Install service worker
 self.addEventListener('install', (event) => {
-  console.info('service worker is being installed')
   event.waitUntil(self.skipWaiting())
 })
 
 // Activate service worker
 self.addEventListener('activate', (event) => {
-  console.info('service worker is being activated')
   node.get().then((ipfs) => {
     ipfsNode = ipfs
   })
@@ -52,9 +49,9 @@ self.addEventListener('activate', (event) => {
 createProxyServer(() => ipfsNode, {
   addListener: self.addEventListener && self.addEventListener.bind(self),
   removeListener: self.removeEventListener && self.removeEventListener.bind(self),
-  async postMessage (data) {
-    // TODO: post back to the client that sent the message?
-    const clients = await self.clients.matchAll()
-    clients.forEach(client => client.postMessage(data))
+  postMessage (data) {
+    self.clients.matchAll().then((clients) => {
+      clients.forEach(client => client.postMessage(data))
+    })
   }
 })

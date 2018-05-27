@@ -1,7 +1,8 @@
 {
   "name": "service-worker-gateway",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "IPFS gateway fully running on a service worker",
+  "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
   "scripts": {
     "lint": "aegir lint",
