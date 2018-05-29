@@ -33,7 +33,8 @@ describe('Service worker', function () {
     require('../src')
 
     const multihash = 'QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o'
-    self.trigger('fetch', new Request(`/ipfs/${multihash}`))
+
+    return self.trigger('fetch', new Request(`/ipfs/${multihash}`))
       .then((response) => {
         expect(response).to.exist()
         expect(response.body).to.exist()
