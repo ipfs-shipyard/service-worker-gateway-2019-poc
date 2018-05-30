@@ -23,9 +23,6 @@ code {
 .table>tbody>tr>td:first-child {
   padding-left: 20px;
 }
-.padding { 
-  margin: 100px;
-}
 #header {
   background: #000;
 }

@@ -8,6 +8,9 @@ const ipfsHttpResponse = require('ipfs-http-response')
 const node = require('./node')
 const statsView = require('./stats-view')
 
+const getFormattedDate = (d) => `${d.getFullYear()}/${d.getMonth()}/${d.getDate()}`
+const getFormattedTime = (d) => `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
+
 let ipfsNode
 const fetchedCIDs = []
 let startDateTime = {
@@ -24,8 +27,8 @@ const fetchCID = (ipfsPath) => {
       const d = new Date()
       fetchedCIDs.push({
         cid: ipfsPath.split('/ipfs/')[1],
-        date: `${d.getFullYear()}/${d.getMonth()}/${d.getDate()}`,
-        time: `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
+        date: getFormattedDate(d),
+        time: getFormattedTime(d)
       })
       return resp
     })
@@ -81,8 +84,8 @@ self.addEventListener('activate', (event) => {
       // Keep a record of the start date and time of the IPFS Node
       const d = new Date()
       startDateTime = {
-        date: `${d.getFullYear()}/${d.getMonth()}/${d.getDate()}`,
-        time: `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
+        date: getFormattedDate(d),
+        time: getFormattedTime(d)
       }
     })
     .catch((err) => console.err(err))

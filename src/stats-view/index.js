@@ -67,7 +67,7 @@ const renderCIDsPanel = (fetchedCIDs) => {
           <td class="table-panel-heading">
             <div><strong>FETCHED CIDs</strong></div>
           </td>
-          <td class="padding">
+          <td>
             <div><strong>Date</strong></div>
           </td>
           <td>
