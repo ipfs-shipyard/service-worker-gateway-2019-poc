@@ -14,17 +14,23 @@
 
 ### Installation
 
+```sh
 > npm i service-worker-gateway
+```
 
 ### Testing the example
 
-* Clone the repo from here
-* `$ cd service-worker-gateway`
-* `$ npm install`
-* `$ cd example`
-* `$ npm install`
-* `$ npm run build`
-* `$ npm run start`
+Run the following commands:
+
+```sh
+> git clone https://github.com/ipfs-shipyard/service-worker-gateway.git
+> cd service-worker-gateway
+> npm install
+> cd example
+> npm install
+> npm run build
+> npm run start
+```
 
 ## Usage
 
@@ -101,3 +107,12 @@ if ('serviceWorker' in navigator) {
     })
 }
 ```
+
+## Related
+
+- [js-ipfs-http-response](https://github.com/ipfs/js-ipfs-http-response)
+- [ipfs-post-msg-proxy](https://github.com/tableflip/ipfs-postmsg-proxy)
+
+## License
+
+[MIT](https://github.com/ipfs-shipyard/service-worker-gateway/blob/master/LICENSE)
