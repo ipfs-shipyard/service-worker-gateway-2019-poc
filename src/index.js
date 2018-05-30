@@ -1,4 +1,4 @@
-/* global self */
+/* global self, Response */
 
 'use strict'
 
@@ -6,31 +6,68 @@ const { createProxyServer } = require('ipfs-postmsg-proxy')
 
 const ipfsHttpResponse = require('ipfs-http-response')
 const node = require('./node')
+const statsView = require('./stats-view')
+
+const getFormattedDate = (d) => `${d.getFullYear()}/${d.getMonth()}/${d.getDate()}`
+const getFormattedTime = (d) => `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
 
 let ipfsNode
+const fetchedCIDs = []
+let startDateTime = {
+  date: '',
+  time: ''
+}
 
-const fetchFile = (ipfsPath) => {
-  return new Promise((resolve, reject) => {
-    node.get()
-      .then((ipfsNode) => ipfsHttpResponse(ipfsNode, ipfsPath))
-      .then((resp) => resolve(resp))
-      .catch((err) => reject(err))
-  })
+// Fetch CID
+const fetchCID = (ipfsPath) => {
+  return node.get()
+    .then((ipfsNode) => ipfsHttpResponse(ipfsNode, ipfsPath))
+    .then((resp) => {
+      // Keep a record of the fetched CID (and fetch date)
+      const d = new Date()
+      fetchedCIDs.push({
+        cid: ipfsPath.split('/ipfs/')[1],
+        date: getFormattedDate(d),
+        time: getFormattedTime(d)
+      })
+      return resp
+    })
+}
+
+// Fetch stats
+const fetchStats = () => {
+  return node.get()
+    .then((ipfsNode) => {
+      return Promise.all([ipfsNode.id(), ipfsNode.repo.stat()])
+        .then(([id, stat]) => new Response(statsView.render(id, stat, fetchedCIDs, startDateTime), {
+          status: 200,
+          statusText: 'OK',
+          headers: { 'Content-Type': 'text/html' }
+        }))
+        .catch((err) => new Response(err.toString()))
+    })
 }
 
 // Fetch request
 self.addEventListener('fetch', (event) => {
   const path = event.request.url
 
-  if (!path.startsWith(self.location.origin + '/ipfs')) {
+  // Not intercepting path
+  if (!path.startsWith(`${self.location.origin}/ipfs`)) {
     return
   }
 
-  const regex = /^.+?(\/ipfs\/.+)$/g
-  const match = regex.exec(path)
-  const ipfsPath = match[1]
+  // Stats Page
+  if (path.startsWith(`${self.location.origin}/ipfs/stats`)) {
+    event.respondWith(fetchStats())
+  } else {
+    // Gateway page
+    const regex = /^.+?(\/ipfs\/.+)$/g
+    const match = regex.exec(path)
+    const ipfsPath = match[1]
 
-  event.respondWith(fetchFile(ipfsPath))
+    event.respondWith(fetchCID(ipfsPath))
+  }
 })
 
 // Install service worker
@@ -40,9 +77,18 @@ self.addEventListener('install', (event) => {
 
 // Activate service worker
 self.addEventListener('activate', (event) => {
-  node.get().then((ipfs) => {
-    ipfsNode = ipfs
-  })
+  node.get()
+    .then((ipfs) => {
+      ipfsNode = ipfs
+
+      // Keep a record of the start date and time of the IPFS Node
+      const d = new Date()
+      startDateTime = {
+        date: getFormattedDate(d),
+        time: getFormattedTime(d)
+      }
+    })
+    .catch((err) => console.err(err))
   event.waitUntil(self.clients.claim())
 })
 

@@ -30,7 +30,6 @@ const getNode = () => {
     } else {
       node.on('ready', () => {
         if (node.isOnline()) {
-          console.info('js-ipfs node in the service worker is ready')
           resolve(node)
         }
       })
