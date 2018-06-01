@@ -4,7 +4,7 @@
 
 const { createProxyServer } = require('ipfs-postmsg-proxy')
 
-const ipfsHttpResponse = require('ipfs-http-response')
+const { getResponse } = require('ipfs-http-response')
 const node = require('./node')
 const statsView = require('./stats-view')
 
@@ -21,7 +21,7 @@ let startDateTime = {
 // Fetch CID
 const fetchCID = (ipfsPath) => {
   return node.get()
-    .then((ipfsNode) => ipfsHttpResponse(ipfsNode, ipfsPath))
+    .then((ipfsNode) => getResponse(ipfsNode, ipfsPath))
     .then((resp) => {
       // Keep a record of the fetched CID (and fetch date)
       const d = new Date()
