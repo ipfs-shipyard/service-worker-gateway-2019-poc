@@ -37,7 +37,6 @@ describe('Service worker', function () {
 
     self.trigger('fetch', new Request(`/ipfs/${multihash}`))
       .then((response) => {
-                
         expect(response).to.exist()
         expect(response.body).to.exist()
         expect(response.headers).to.exist()

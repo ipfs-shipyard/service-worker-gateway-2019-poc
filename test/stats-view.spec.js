@@ -26,7 +26,7 @@ describe('Stats view page', function () {
 
   it('should return the stats page with the fetched hashes correctly', function (done) {
     this.timeout(50 * 1000)
-    
+
     require('../src')
 
     Promise.all([self.trigger('fetch', new Request(`/ipfs/QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o`)),
@@ -34,7 +34,8 @@ describe('Stats view page', function () {
       self.trigger('fetch', new Request(`/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about`))])
       .then((values) => {
         expect(values).to.exist()
-        return self.trigger('fetch', new Request(`/stats`))
+
+        self.trigger('fetch', new Request(`/stats`))
           .then((response) => {
             expect(response).to.exist()
             expect(response.headers).to.exist()
