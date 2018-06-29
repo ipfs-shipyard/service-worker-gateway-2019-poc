@@ -24,15 +24,18 @@ describe('Stats view page', function () {
     clearModule('../src')
   })
 
-  it('should return the stats page with the fetched hashes correctly', () => {
+  it('should return the stats page with the fetched hashes correctly', function (done) {
+    this.timeout(50 * 1000)
+
     require('../src')
 
-    return Promise.all([self.trigger('fetch', new Request(`/ipfs/QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o`)),
+    Promise.all([self.trigger('fetch', new Request(`/ipfs/QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o`)),
       self.trigger('fetch', new Request(`/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG`)),
       self.trigger('fetch', new Request(`/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about`))])
       .then((values) => {
         expect(values).to.exist()
-        return self.trigger('fetch', new Request(`/ipfs/stats`))
+
+        self.trigger('fetch', new Request(`/stats`))
           .then((response) => {
             expect(response).to.exist()
             expect(response.headers).to.exist()
@@ -42,6 +45,8 @@ describe('Stats view page', function () {
               'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG',
               'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about'
             ]))
+
+            done()
           })
           .catch(() => {
             expect(values).to.not.exist()
@@ -49,10 +54,12 @@ describe('Stats view page', function () {
       })
   })
 
-  it('should return the stats page with empty fetched hashes correctly', () => {
+  it('should return the stats page with empty fetched hashes correctly', function (done) {
+    this.timeout(50 * 1000)
+
     require('../src')
 
-    return self.trigger('fetch', new Request(`/ipfs/stats`))
+    self.trigger('fetch', new Request(`/stats`))
       .then((response) => {
         expect(response).to.exist()
         expect(response.headers).to.exist()
@@ -65,6 +72,8 @@ describe('Stats view page', function () {
         expect(response.body).to.satisfy(checkAll([
           'Any CID fetched so far'
         ]))
+
+        done()
       })
   })
 })

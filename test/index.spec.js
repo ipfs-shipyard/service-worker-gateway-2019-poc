@@ -29,16 +29,19 @@ describe('Service worker', function () {
     expect(self.listeners['fetch']).to.exist()
   })
 
-  it('should return an HTTP response from an IPFS node correctly with the file', () => {
+  it('should return an HTTP response from an IPFS node correctly with the file', function (done) {
     require('../src')
+    this.timeout(50 * 1000)
 
     const multihash = 'QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o'
 
-    return self.trigger('fetch', new Request(`/ipfs/${multihash}`))
+    self.trigger('fetch', new Request(`/ipfs/${multihash}`))
       .then((response) => {
         expect(response).to.exist()
         expect(response.body).to.exist()
         expect(response.headers).to.exist()
+
+        done()
       })
   })
 })
