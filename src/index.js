@@ -53,12 +53,12 @@ self.addEventListener('fetch', (event) => {
   const path = event.request.url
 
   // Not intercepting path
-  if (!path.startsWith(`${self.location.origin}/ipfs`)) {
+  if (!(path.startsWith(`${self.location.origin}/ipfs`) || path.startsWith(`${self.location.origin}/stats`))) {
     return
   }
 
   // Stats Page
-  if (path.startsWith(`${self.location.origin}/ipfs/stats`)) {
+  if (path.startsWith(`${self.location.origin}/stats`)) {
     event.respondWith(fetchStats())
   } else {
     // Gateway page
