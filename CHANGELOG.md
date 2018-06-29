@@ -1,3 +1,13 @@
+<a name="0.1.3"></a>
+## [0.1.3](https://github.com/ipfs-shipyard/service-worker-gateway/compare/v0.1.2...v0.1.3) (2018-06-29)
+
+
+### Bug Fixes
+
+* move stats page to the root ([c080b6e](https://github.com/ipfs-shipyard/service-worker-gateway/commit/c080b6e))
+
+
+
 <a name="0.1.2"></a>
 ## 0.1.2 (2018-05-30)
 

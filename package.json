@@ -1,6 +1,6 @@
 {
   "name": "service-worker-gateway",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "IPFS gateway fully running on a service worker",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
