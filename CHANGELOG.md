@@ -1,3 +1,8 @@
+<a name="0.1.4"></a>
+## [0.1.4](https://github.com/ipfs-shipyard/service-worker-gateway/compare/v0.1.3...v0.1.4) (2018-07-19)
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/ipfs-shipyard/service-worker-gateway/compare/v0.1.2...v0.1.3) (2018-06-29)
 
