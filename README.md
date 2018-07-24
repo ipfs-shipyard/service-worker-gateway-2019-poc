@@ -37,7 +37,7 @@ Run the following commands:
 The service worker gateway will get in action when specifc HTTP requests occur.
 
 - `/ipfs/{HASH}` - Get the content of the file represented by the Hash
-- `/ipfs/stats` - Get the current stats of the IPFS Node running in the service worker
+- `/stats` - Get the current stats of the IPFS Node running in the service worker
 
 ### Service Worker running on IPFS node
 
