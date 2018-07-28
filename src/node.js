@@ -6,13 +6,7 @@ let node
 
 /* start a IPFS node within the service worker */
 const startNode = () => {
-  node = new IPFS({
-    config: {
-      Addresses: {
-        Swarm: []
-      }
-    }
-  })
+  node = new IPFS()
   node.on('error', (error) => {
     throw new Error('js-ipfs node errored', error)
   })
