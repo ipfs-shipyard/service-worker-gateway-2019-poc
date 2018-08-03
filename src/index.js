@@ -64,8 +64,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(fetchStats())
   } else {
     // Gateway page
-    const regex = /^.+?(\/ipfs\/.+)$/g
-    const match = regex.exec(path)
+    const match = path.match(/(\/ipfs\/.*?)(\#|\?|$)/)
     const ipfsPath = match[1]
 
     event.respondWith(fetchCID(ipfsPath))
