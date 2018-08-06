@@ -1,4 +1,4 @@
-/* global Request, self */
+/* global Request, self, Blob */
 /* eslint-env mocha */
 
 'use strict'
@@ -40,7 +40,42 @@ describe('Service worker', function () {
         expect(response).to.exist()
         expect(response.body).to.exist()
         expect(response.headers).to.exist()
+        expect(response.body).to.be.an.instanceof(Blob)
+        expect(response.body.parts[0].toString()).to.equal('hello world\n')
+        done()
+      })
+  })
 
+  it('should resolve query strings correctly', function (done) {
+    require('../src')
+    this.timeout(50 * 1000)
+
+    const multihash = 'QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o'
+
+    self.trigger('fetch', new Request(`/ipfs/${multihash}?everything=42`))
+      .then((response) => {
+        expect(response).to.exist()
+        expect(response.body).to.exist()
+        expect(response.headers).to.exist()
+        expect(response.body).to.be.an.instanceof(Blob)
+        expect(response.body.parts[0].toString()).to.equal('hello world\n')
+        done()
+      })
+  })
+
+  it('should resolve fragment identifiers correctly', function (done) {
+    require('../src')
+    this.timeout(50 * 1000)
+
+    const multihash = 'QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o'
+
+    self.trigger('fetch', new Request(`/ipfs/${multihash}#/wumbo`))
+      .then((response) => {
+        expect(response).to.exist()
+        expect(response.body).to.exist()
+        expect(response.headers).to.exist()
+        expect(response.body).to.be.an.instanceof(Blob)
+        expect(response.body.parts[0].toString()).to.equal('hello world\n')
         done()
       })
   })
