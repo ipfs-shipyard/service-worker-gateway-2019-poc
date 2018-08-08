@@ -1,6 +1,7 @@
 'use strict'
 
 const mainStyle = require('./style')
+const filesize = require('filesize')
 
 const renderNodePanel = (ipfsId, stat, startDateTime) => {
   const { id, agentVersion, protocolVersion, publicKey } = ipfsId // ipfs.id
@@ -22,7 +23,7 @@ const renderNodePanel = (ipfsId, stat, startDateTime) => {
       </p>
       <p>
         <strong>Repo Size</strong>
-        <code>${repoSize}/${storageMax} Bytes</code>
+        <code>${filesize(repoSize)} / ${filesize(storageMax)}</code>
       </p>
       <p>
         <strong>Running Since</strong>
