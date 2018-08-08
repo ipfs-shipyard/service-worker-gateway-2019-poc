@@ -10,7 +10,10 @@ chai.use(dirtyChai)
 
 const clearModule = require('clear-module')
 const makeServiceWorkerEnv = require('service-worker-mock')
+const indexedDB = require('fake-indexeddb')
+
 global.window = require('./helpers/mock-window')()
+global.indexedDB = indexedDB
 
 describe('Service worker', function () {
   beforeEach(() => {
