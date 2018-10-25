@@ -1,10 +1,13 @@
+const resolve = require('path').resolve
+
 module.exports = {
   entry: {
     'service-worker-bundle': './src/index.js',
     bundle: './public/index.js'
   },
   output: {
-    filename: 'public/[name].js'
+    path: resolve('public'),
+    filename: '[name].js'
   },
   node: {
     fs: 'empty',
