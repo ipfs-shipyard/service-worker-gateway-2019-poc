@@ -8,7 +8,7 @@ let node
 const startNode = () => {
   node = new IPFS()
   node.on('error', (error) => {
-    throw new Error('js-ipfs node errored', error)
+    console.log(new Error('js-ipfs node errored', error))
   })
 }
 
