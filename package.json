@@ -37,6 +37,7 @@
     "debug": "^4.1.0",
     "file-type": "^10.5.0",
     "filesize": "^3.6.1",
+    "idb-keyval": "^3.0.5",
     "ipfs": "~0.33.1",
     "ipfs-http-response": "~0.2.1",
     "ipfs-postmsg-proxy": "^3.1.1",
@@ -54,6 +55,7 @@
     "chai": "^4.2.0",
     "clear-module": "^3.0.0",
     "dirty-chai": "^2.0.1",
+    "fake-indexeddb": "^2.0.4",
     "ipfsd-ctl": "~0.40.0",
     "service-worker-mock": "^1.10.1"
   },

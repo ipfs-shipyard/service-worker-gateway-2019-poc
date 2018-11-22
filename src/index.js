@@ -3,8 +3,9 @@
 'use strict'
 
 const { createProxyServer } = require('ipfs-postmsg-proxy')
-
 const { getResponse } = require('ipfs-http-response')
+const { get, set } = require('idb-keyval')
+
 const node = require('./node')
 const statsView = require('./stats-view')
 
@@ -12,25 +13,25 @@ const getFormattedDate = (d) => `${d.getFullYear()}/${d.getMonth()}/${d.getDate(
 const getFormattedTime = (d) => `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`
 
 let ipfsNode
-const fetchedCIDs = []
-let startDateTime = {
-  date: '',
-  time: ''
-}
 
 // Fetch CID
 const fetchCID = (ipfsPath) => {
   return node.get()
-    .then((ipfsNode) => getResponse(ipfsNode, ipfsPath))
-    .then((resp) => {
-      // Keep a record of the fetched CID (and fetch date)
-      const d = new Date()
-      fetchedCIDs.push({
-        cid: ipfsPath.split('/ipfs/')[1],
-        date: getFormattedDate(d),
-        time: getFormattedTime(d)
-      })
-      return resp
+    .then((ipfsNode) => {
+      return Promise.all([getResponse(ipfsNode, ipfsPath), get('fetched-cids')])
+        .then(([resp, fetchedCIDs = []]) => {
+          // Keep a record of the fetched CID (and fetch date)
+          const d = new Date()
+
+          fetchedCIDs.push({
+            cid: ipfsPath.split('/ipfs/')[1],
+            date: getFormattedDate(d),
+            time: getFormattedTime(d)
+          })
+
+          return set('fetched-cids', fetchedCIDs).then(() => resp)
+        })
+        .catch((err) => new Response(err.toString()))
     })
 }
 
@@ -38,12 +39,14 @@ const fetchCID = (ipfsPath) => {
 const fetchStats = () => {
   return node.get()
     .then((ipfsNode) => {
-      return Promise.all([ipfsNode.id(), ipfsNode.repo.stat()])
-        .then(([id, stat]) => new Response(statsView.render(id, stat, fetchedCIDs, startDateTime), {
-          status: 200,
-          statusText: 'OK',
-          headers: { 'Content-Type': 'text/html' }
-        }))
+      return Promise.all([ipfsNode.id(), ipfsNode.repo.stat(), get('fetched-cids'), get('start-date-time')])
+        .then(([id, stat, fetchedCIDs = [], startDateTime = {}]) => {
+          return new Response(statsView.render(id, stat, fetchedCIDs, startDateTime), {
+            status: 200,
+            statusText: 'OK',
+            headers: { 'Content-Type': 'text/html' }
+          })
+        })
         .catch((err) => new Response(err.toString()))
     })
 }
@@ -84,10 +87,12 @@ self.addEventListener('activate', (event) => {
 
       // Keep a record of the start date and time of the IPFS Node
       const d = new Date()
-      startDateTime = {
+
+      set('fetched-cids', [])
+      set('start-date-time', {
         date: getFormattedDate(d),
         time: getFormattedTime(d)
-      }
+      })
     })
     .catch((err) => console.err(err))
   event.waitUntil(self.clients.claim())
