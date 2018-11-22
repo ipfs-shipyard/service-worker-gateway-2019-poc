@@ -28,22 +28,10 @@ const fetchCID = (ipfsPath) => {
             date: getFormattedDate(d),
             time: getFormattedTime(d)
           })
-          return set('fetched-cids', fetchedCIDs).then((sth) => {
-            console.log('set')
 
-            return get('fetched-cids').then((v) => {
-              console.log('ipfsPath', ipfsPath)
-              console.log('fetched cids', fetchedCIDs)
-              console.log('v', ipfsPath, v)
-
-              return resp
-            })
-
-            // return resp
-          })
-
-          // return resp
+          return set('fetched-cids', fetchedCIDs).then(() => resp)
         })
+        .catch((err) => new Response(err.toString()))
     })
 }
 
@@ -52,11 +40,13 @@ const fetchStats = () => {
   return node.get()
     .then((ipfsNode) => {
       return Promise.all([ipfsNode.id(), ipfsNode.repo.stat(), get('fetched-cids'), get('start-date-time')])
-        .then(([id, stat, fetchedCIDs = [], startDateTime = {}]) => new Response(statsView.render(id, stat, fetchedCIDs, startDateTime), {
-          status: 200,
-          statusText: 'OK',
-          headers: { 'Content-Type': 'text/html' }
-        }))
+        .then(([id, stat, fetchedCIDs = [], startDateTime = {}]) => {
+          return new Response(statsView.render(id, stat, fetchedCIDs, startDateTime), {
+            status: 200,
+            statusText: 'OK',
+            headers: { 'Content-Type': 'text/html' }
+          })
+        })
         .catch((err) => new Response(err.toString()))
     })
 }

@@ -19,7 +19,7 @@ global.indexedDB = indexedDB
 const checkAll = (bits) => string => bits.every(bit => string.includes(bit))
 const checkAny = (bits) => string => bits.some(bit => string.includes(bit))
 
-describe.only('Stats view page', function () {
+describe('Stats view page', function () {
   beforeEach(() => {
     Object.assign(
       global,
@@ -28,70 +28,69 @@ describe.only('Stats view page', function () {
     clearModule('../src')
   })
 
-  it.only('should return the stats page with the fetched hashes correctly', function (done) {
+  it('should return the stats page with empty fetched hashes correctly', function () {
     this.timeout(50 * 1000)
 
     require('../src')
 
-    Promise.all([
-      self.trigger('fetch', new Request(`/ipfs/QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o`)),
-      self.trigger('fetch', new Request(`/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG`)),
-      self.trigger('fetch', new Request(`/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about`))])
-      .then((values) => {
-        expect(values).to.exist()
-
-        setTimeout(() => {
-          self.trigger('fetch', new Request(`/stats`))
-            .then((response) => {
-              expect(response).to.exist()
-              expect(response.headers).to.exist()
-              expect(response.body).to.exist()
-              expect(response.body).to.satisfy(checkAll([
-                'QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o',
-                'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG',
-                'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about'
-              ]))
-
-              done()
-            })
-        }, 2000)
-        /*
-        self.trigger('fetch', new Request(`/stats`))
-          .then((response) => {
-            expect(response).to.exist()
-            expect(response.headers).to.exist()
-            expect(response.body).to.exist()
-            expect(response.body).to.satisfy(checkAll([
-              'QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o',
-              'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG',
-              'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about'
-            ]))
-
-            done()
-          }) */
-      })
-  })
-
-  it('should return the stats page with empty fetched hashes correctly', function (done) {
-    this.timeout(50 * 1000)
-
-    require('../src')
-
-    self.trigger('fetch', new Request(`/stats`))
+    return self.trigger('fetch', new Request(`/stats`))
       .then((response) => {
         expect(response).to.exist()
         expect(response.headers).to.exist()
         expect(response.body).to.exist()
         expect(response.body).to.not.satisfy(checkAny([
-          'QmT78zSuBmuS4z925WZfrqQ1qHaJ56DQaTfyMUF7F8ff5o',
+          'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV',
           'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG',
           'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about'
         ]))
+      })
+  })
+
+  it('should return the stats page with the fetched hashes correctly', function () {
+    this.timeout(50 * 1000)
+
+    require('../src')
+
+    return self.trigger('fetch', new Request(`/ipfs/QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV`))
+      .then((response) => {
+        expect(response).to.exist()
+
+        return self.trigger('fetch', new Request(`/stats`))
+      })
+      .then((response) => {
+        expect(response).to.exist()
         expect(response.body).to.satisfy(checkAll([
-          'Any CID fetched so far'
+          'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV'
         ]))
 
-        done()
+        return self.trigger('fetch', new Request(`/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG`))
+      })
+      .then((response) => {
+        expect(response).to.exist()
+
+        return self.trigger('fetch', new Request(`/stats`))
+      })
+      .then((response) => {
+        expect(response).to.exist()
+        expect(response.body).to.satisfy(checkAll([
+          'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV',
+          'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG'
+        ]))
+
+        return self.trigger('fetch', new Request(`/ipfs/QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about`))
+      })
+      .then((response) => {
+        expect(response).to.exist()
+
+        return self.trigger('fetch', new Request(`/stats`))
+      })
+      .then((response) => {
+        expect(response).to.exist()
+        expect(response.body).to.satisfy(checkAll([
+          'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV',
+          'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG',
+          'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about'
+        ]))
       })
   })
 })

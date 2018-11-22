@@ -45,6 +45,7 @@ describe('Service worker', function () {
         expect(response.headers).to.exist()
         expect(response.body).to.be.an.instanceof(Blob)
         expect(response.body.parts[0].toString()).to.equal('hello world\n')
+
         done()
       })
   })
@@ -62,6 +63,7 @@ describe('Service worker', function () {
         expect(response.headers).to.exist()
         expect(response.body).to.be.an.instanceof(Blob)
         expect(response.body.parts[0].toString()).to.equal('hello world\n')
+
         done()
       })
   })
@@ -79,6 +81,7 @@ describe('Service worker', function () {
         expect(response.headers).to.exist()
         expect(response.body).to.be.an.instanceof(Blob)
         expect(response.body.parts[0].toString()).to.equal('hello world\n')
+
         done()
       })
   })

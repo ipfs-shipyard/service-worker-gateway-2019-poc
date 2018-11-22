@@ -15,6 +15,7 @@ describe('Service worker running node', function () {
       .then((node) => {
         expect(node).to.exist()
         expect(node).to.have.property('repo')
+
         done()
       })
   })

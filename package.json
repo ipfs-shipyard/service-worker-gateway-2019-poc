@@ -55,6 +55,7 @@
     "chai": "^4.2.0",
     "clear-module": "^3.0.0",
     "dirty-chai": "^2.0.1",
+    "fake-indexeddb": "^2.0.4",
     "ipfsd-ctl": "~0.40.0",
     "service-worker-mock": "^1.10.1"
   },
