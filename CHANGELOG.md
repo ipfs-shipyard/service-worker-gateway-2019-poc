@@ -1,3 +1,13 @@
+<a name="0.1.9"></a>
+## [0.1.9](https://github.com/ipfs-shipyard/service-worker-gateway/compare/v0.1.8...v0.1.9) (2018-11-23)
+
+
+### Bug Fixes
+
+* shared data on different processes ([#32](https://github.com/ipfs-shipyard/service-worker-gateway/issues/32)) ([29899ff](https://github.com/ipfs-shipyard/service-worker-gateway/commit/29899ff))
+
+
+
 <a name="0.1.8"></a>
 ## [0.1.8](https://github.com/ipfs-shipyard/service-worker-gateway/compare/v0.1.7...v0.1.8) (2018-11-20)
 
