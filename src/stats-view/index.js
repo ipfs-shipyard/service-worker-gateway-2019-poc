@@ -5,7 +5,7 @@ const filesize = require('filesize')
 
 const renderNodePanel = (ipfsId, stat, startDateTime) => {
   const { id, agentVersion, protocolVersion, publicKey } = ipfsId // ipfs.id
-  const { repoSize, storageMax } = stat // ipfs.repo.stat
+  const { repoSize } = stat // ipfs.repo.stat
 
   return `
     <div class="content-spacing">
@@ -23,7 +23,7 @@ const renderNodePanel = (ipfsId, stat, startDateTime) => {
       </p>
       <p>
         <strong>Repo Size</strong>
-        <code>${filesize(repoSize)} / ${filesize(storageMax)}</code>
+        <code>${filesize(repoSize)}</code>
       </p>
       <p>
         <strong>Running Since</strong>
