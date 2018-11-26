@@ -1,3 +1,13 @@
+<a name="0.1.10"></a>
+## [0.1.10](https://github.com/ipfs-shipyard/service-worker-gateway/compare/v0.1.9...v0.1.10) (2018-11-26)
+
+
+### Bug Fixes
+
+* repo size limit ([#33](https://github.com/ipfs-shipyard/service-worker-gateway/issues/33)) ([d97f4cc](https://github.com/ipfs-shipyard/service-worker-gateway/commit/d97f4cc))
+
+
+
 <a name="0.1.9"></a>
 ## [0.1.9](https://github.com/ipfs-shipyard/service-worker-gateway/compare/v0.1.8...v0.1.9) (2018-11-23)
 
