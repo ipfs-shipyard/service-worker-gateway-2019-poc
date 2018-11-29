@@ -54,7 +54,7 @@ const fetchStats = () => {
 // Fetch request
 self.addEventListener('fetch', (event) => {
   const path = event.request.url
-  const isIpfsRequest = path.startsWith(`${self.location.origin}/ipfs`)
+  const isIpfsRequest = path.startsWith(`${self.location.origin}/ipfs/`)
   const isStatsRequest = path.startsWith(`${self.location.origin}/stats`)
 
   // Not intercepting path
