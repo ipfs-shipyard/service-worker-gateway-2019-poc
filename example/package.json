@@ -8,9 +8,12 @@
   },
   "license": "MIT",
   "dependencies": {
+    "babel-core": "^6.26.3",
     "service-worker-gateway": "file:../"
   },
   "devDependencies": {
+    "babel-loader": "^8.0.4",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "http-server": "^0.11.0",
     "standard": "^10.0.3",
     "webpack": "^4.22.0",
