@@ -6,28 +6,26 @@ let node
 
 /* start a IPFS node within the service worker */
 const startNode = () => {
-  node = new IPFS()
-  node.on('error', (error) => {
-    console.log(new Error('js-ipfs node errored', error))
+  return new Promise((resolve) => {
+    node = new IPFS()
+    node.on('error', (error) => {
+      console.log(error.toString())
+    })
+
+    node.on('ready', () => {
+      resolve(node)
+    })
   })
 }
 
 /* get a ready to use IPFS node */
 const getNode = () => {
-  if (!node) {
-    startNode()
-  }
-
   return new Promise((resolve) => {
-    if (node.isOnline()) {
-      resolve(node)
-    } else {
-      node.on('ready', () => {
-        if (node.isOnline()) {
-          resolve(node)
-        }
-      })
+    if (!node) {
+      return startNode().then((node) => resolve(node))
     }
+
+    resolve(node)
   })
 }
 

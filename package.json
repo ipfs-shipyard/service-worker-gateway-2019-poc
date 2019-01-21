@@ -32,14 +32,14 @@
   },
   "homepage": "https://github.com/ipfs-shipyard/service-worker-gateway#readme",
   "dependencies": {
-    "async": "^2.6.0",
-    "cids": "~0.5.5",
-    "debug": "^4.1.0",
+    "async": "^2.6.1",
+    "cids": "~0.5.7",
+    "debug": "^4.1.1",
     "file-type": "^10.5.0",
     "filesize": "^3.6.1",
     "idb-keyval": "^3.0.5",
-    "ipfs": "~0.33.1",
-    "ipfs-http-response": "~0.2.1",
+    "ipfs": "0.34.0",
+    "ipfs-http-response": "~0.2.2",
     "ipfs-postmsg-proxy": "^3.1.1",
     "ipfs-unixfs": "~0.1.16",
     "mime-types": "^2.1.21",
@@ -51,13 +51,13 @@
     "stream-to-pull-stream": "^1.7.2"
   },
   "devDependencies": {
-    "aegir": "^17.0.1",
+    "aegir": "^18.0.3",
     "chai": "^4.2.0",
     "clear-module": "^3.0.0",
     "dirty-chai": "^2.0.1",
     "fake-indexeddb": "^2.0.4",
-    "ipfsd-ctl": "~0.40.0",
-    "service-worker-mock": "^1.10.1"
+    "ipfsd-ctl": "~0.40.3",
+    "service-worker-mock": "^1.12.0"
   },
   "contributors": [
     "David Dias <daviddias.p@gmail.com>",

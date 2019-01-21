@@ -38,7 +38,7 @@ describe('Stats view page', function () {
         expect(response).to.exist()
         expect(response.headers).to.exist()
         expect(response.body).to.exist()
-        expect(response.body).to.not.satisfy(checkAny([
+        expect(response.body.parts.join('')).to.not.satisfy(checkAny([
           'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV',
           'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG',
           'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about'
@@ -59,7 +59,7 @@ describe('Stats view page', function () {
       })
       .then((response) => {
         expect(response).to.exist()
-        expect(response.body).to.satisfy(checkAll([
+        expect(response.body.parts.join('')).to.satisfy(checkAll([
           'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV'
         ]))
 
@@ -72,7 +72,7 @@ describe('Stats view page', function () {
       })
       .then((response) => {
         expect(response).to.exist()
-        expect(response.body).to.satisfy(checkAll([
+        expect(response.body.parts.join('')).to.satisfy(checkAll([
           'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV',
           'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG'
         ]))
@@ -86,7 +86,7 @@ describe('Stats view page', function () {
       })
       .then((response) => {
         expect(response).to.exist()
-        expect(response.body).to.satisfy(checkAll([
+        expect(response.body.parts.join('')).to.satisfy(checkAll([
           'QmeYxwj4CwCeGVhwi3xLrmBZUUFQdftshSiGLrTdTnWEVV',
           'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG',
           'QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG/about'
