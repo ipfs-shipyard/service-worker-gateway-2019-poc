@@ -1,6 +1,6 @@
 {
   "name": "service-worker-gateway",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "IPFS gateway fully running on a service worker",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -63,7 +63,8 @@
     "David Dias <daviddias.p@gmail.com>",
     "Diogo Silva <fsdiogo@gmail.com>",
     "Kevin Kwok <antimatter15@gmail.com>",
-    "Vasco Santos <vasco.santos@ua.pt>",
-    "Vasco Santos <vasco.santos@moxy.studio>"
+    "Oli Evans <oli@tableflip.io>",
+    "Vasco Santos <vasco.santos@moxy.studio>",
+    "Vasco Santos <vasco.santos@ua.pt>"
   ]
 }
