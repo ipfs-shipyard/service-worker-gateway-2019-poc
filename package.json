@@ -1,6 +1,6 @@
 {
   "name": "service-worker-gateway",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "description": "IPFS gateway fully running on a service worker",
   "leadMaintainer": "Vasco Santos <vasco.santos@moxy.studio>",
   "main": "src/index.js",
@@ -60,6 +60,7 @@
     "service-worker-mock": "^1.12.0"
   },
   "contributors": [
+    "Alan Shaw <alan.shaw@protocol.ai>",
     "David Dias <daviddias.p@gmail.com>",
     "Diogo Silva <fsdiogo@gmail.com>",
     "Kevin Kwok <antimatter15@gmail.com>",
