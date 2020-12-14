@@ -1,3 +1,13 @@
+# ⛔️ DEPRECATED
+
+_This example is out of date and will not be maintained._
+
+See the modern end-to-end example of using js-ipfs node in `SharedWorker` from `ServiceWorker` at [`ipfs/js-ipfs/examples/browser-service-worker`](https://github.com/ipfs/js-ipfs/tree/master/examples/browser-service-worker)
+
+
+---
+
+
 # service-worker-gateway
 
 [![](https://img.shields.io/badge/made%20by-Protocol%20Labs-blue.svg?style=flat-square)](http://protocol.ai)
